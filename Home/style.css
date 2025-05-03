@@ -1,0 +1,155 @@
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+  background: linear-gradient(180deg, #125eb4, #0f3c67);
+  /* background: linear-gradient(180deg, #3593fd, #1b6da1); */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-x: hidden;
+}
+
+.header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  color: white;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.header .icons{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+
+.header .icons .signed{
+  background-color: rgba(224, 234, 243, 0.58);
+  padding: 1px;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+.header .icons i {
+  width: 22px;
+  height: 22px;
+  font-size: 22px; /* Consistent icon size */
+  cursor: pointer;
+  margin: 5px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  padding: 20px;
+}
+
+.description {
+  margin-top: 50px;
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: left;
+  width: 100%;
+  max-width: 600px;
+}
+
+.description h2 {
+  font-size: 20px;
+  margin-bottom: 10px;
+  color: #4a90e2;
+}
+
+.description p {
+  font-size: 16px;
+  color: #333;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  width: 90%;
+  max-width: 600px;
+  margin: 10px 0;
+}
+
+.button {
+  background: linear-gradient(100deg, #3593fd, #1b6da1);
+  
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  width: 48%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.button i {
+  width: 24px;
+  height: 24px;
+  font-size: 24px; /* Consistent icon size */
+}
+
+.button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #104a8f, #1e6bc0);
+}
+
+    /* Footer */
+  footer {
+      background-color: #04266f;
+      color: white;
+      width: 100%;
+      text-align: center;
+      padding: 1rem;
+      margin-top: auto;
+  }
+
+   /* PC size warning */
+   .pc-warning {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    color: white;
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2rem;
+    font-size: 1.5rem;
+}
+
+@media (min-width: 1025px) {
+  .container, .header, .buttons , .footer{
+    display: none;
+}
+    .pc-warning {
+        display: flex;
+    }
+}
