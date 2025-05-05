@@ -111,15 +111,10 @@ body {
   display: block;
 }
 
-.login-form .email-part ,.login-form .password-part, 
-.register-form .name-part, .register-form .account_name-part , .register-form .email-part ,
-.register-form .password-part ,.register-form .confirm-password-part {
-  margin-bottom: 15px;
-}
-
 .login-form input, .register-form input {
   width: 100%;
   padding: 10px;
+  margin-bottom: 15px;
   border: 1px solid #ccc;
   border-radius: 5px;
   font-size: 16px;
@@ -210,6 +205,46 @@ footer {
   font-size: 12px;
   margin-left: 6px;
 }
+
+
+.notification {
+  z-index: 1200;
+  padding: 8px;
+  margin-top: 10px;
+  margin-bottom: -50px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  animation: fadeIn 0.3s;
+}
+
+.notification.error {
+  background-color: #ffebee;
+  color: #c62828;
+  border-left: 4px solid #c62828;
+}
+
+.notification.success {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  border-left: 4px solid #2e7d32;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 0 0 0 10px;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
 /* .error-message {
   z-index: 1000;
   display: flex;

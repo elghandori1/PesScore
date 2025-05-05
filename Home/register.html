@@ -26,11 +26,10 @@
         <a href="/" class="back-link">Back to Home</a>
       </div>
     </div>
-      <div id="error-message" class="error-message" style="display: none;">
-          <span id="error-text"></span>
-          <button type="button" id="close-error" onclick="closeErrorMessage()">×</button>
-      </div>
-  
+    <div id="serverNotification" class="notification" style="display: none;">
+      <span id="notificationMessage"></span>
+      <button id="closeNotification" class="close-btn">&times;</button>
+  </div>
     <main class="container">
         <section class="register-form">
           <div class="register-header">
@@ -39,35 +38,23 @@
           </div>
             <form action="/register" method="POST" id="registerForm">
                 <label for="name">Name</label>
-                <div class="name-part">
                   <input type="text" id="name" name="name" placeholder="Enter your name" />
-                  <div class="errorMessages" id="nameError"></div>
-                </div>
                 
                 <label for="account_name">Account Name</label>
-                <div class="account_name-part">
-                  <input type="text" id="account_name" name="account_name" placeholder="Enter account name" />
-                  <div class="errorMessages" id="account_nameError"></div>
-                </div>
+                <input type="text" id="account_name" name="account_name" placeholder="Enter account name" />
+                
                 
                 <label for="email">Email</label>
-                <div class="email-part">
-                  <input type="text" id="email" name="email" placeholder="Enter your email"  />
-                  <div class="errorMessages" id="emailError"></div>
-
+                <input type="text" id="email" name="email" placeholder="Enter your email"  />
                 </div>
                 
                 <label for="password">Password</label>
-                <div class="password-part">
-                  <input type="password" id="password" name="password" placeholder="Enter your password" />
-                  <div class="errorMessages" id="passwordError"></div>
-                </div>
-                
+
+                <input type="password" id="password" name="password" placeholder="Enter your password" />
+
                 <label for="confirmPassword">Confirm Password</label>
-                <div class="confirm-password-part">
+
                     <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm your password" />
-                    <div class="errorMessages" id="confirmPasswordError"></div>
-                </div>
 
                 <button type="submit">Register</button>
             </form>
