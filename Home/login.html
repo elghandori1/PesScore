@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>PesScore</title>
+    <title>PesScore - Sign In</title>
     <link rel="stylesheet" href="../Assets/css/style.css" />
     <link
       rel="stylesheet"
@@ -20,29 +20,29 @@
             <p>Please open this app on a mobile device or tablet for the best experience.</p>
         </div>
     </div>
-
     <div class="header">
-      <h2 id="logoName">PesScore </h2>
+      <h2 id="logoName">PesScore</h2>
       <div class="icons">
-          <a href="/login" class="signin-link">Sign In</a>
+        <a href="/" class="back-link">Back to Home</a>
       </div>
     </div>
     <main class="container">
-        <section class="description">
-            <h2>Description</h2>
-            <p>PesScore is a mobile-friendly web app designed to track and display the results and history of football matches between friends.</p>
+        <section class="login-form">
+            <h2>Sign In</h2>
+            <form action="/login" method="POST">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required />
+                
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required />
+                
+                <button type="submit">Sign In</button>
+            </form>
+            <p class="register-prompt">
+                Don't have an account? <a href="/register" class="register-link">Register</a>
+            </p>
         </section>
     </main>
-    <div class="buttons">
-        <div class="button">
-            <i class="fa-solid fa-user-plus" alt="Add Friend Icon"></i>
-            <div>Add Friend</div>
-        </div>
-        <div class="button">
-            <i class="fa-solid fa-list" alt="List Friends Icon"></i>
-            <div>List Friends</div>
-        </div>
-    </div>
     <footer class="footer">
         PesScore © 2025 - Football Match Tracker
     </footer>
