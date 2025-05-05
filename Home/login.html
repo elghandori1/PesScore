@@ -27,24 +27,33 @@
       </div>
     </div>
     <main class="container">
-        <section class="login-form">
-            <h2>Sign In</h2>
-            <form action="/login" method="POST">
-                <label for="email">Email</label>
-                <input type="email" id="email" name="email" placeholder="Enter your email" required />
-                
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" placeholder="Enter your password" required />
-                
-                <button type="submit">Sign In</button>
-            </form>
-            <p class="register-prompt">
-                Don't have an account? <a href="/register" class="register-link">Register</a>
-            </p>
-        </section>
+      <section class="login-form">
+        <h2>Sign In</h2>
+        <form action="/" method="POST" id="loginForm">
+            <label for="email">Email</label>
+            <div class="email-part">
+                <input type="text" id="email" name="email" placeholder="Enter your email"/>
+                <div class="errorMessages" id="emailError"></div>
+            </div>
+            
+            <label for="password">Password</label>
+            <div class="password-part">
+                <input type="password" id="password" name="password" placeholder="Enter your password"/>
+                <div class="errorMessages" id="passwordError"></div>
+            </div>
+            
+            <button type="submit">Sign In</button>
+        </form>
+        <p class="register-prompt">
+            Don't have an account? <a href="/register" class="register-link">Register</a>
+        </p>
+    </section>
     </main>
+
     <footer class="footer">
         PesScore © 2025 - Football Match Tracker
     </footer>
+
+    <script src="../Assets/js/loginScripts.js"></script>
   </body>
 </html>
