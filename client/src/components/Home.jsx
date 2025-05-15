@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG3.png";
 
 function Home() {
+  
   return (
     <div
       className="min-h-screen flex flex-col items-center overflow-x-hidden relative"

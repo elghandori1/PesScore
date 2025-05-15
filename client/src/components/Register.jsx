@@ -1,8 +1,55 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link,useNavigate } from "react-router-dom";
+
 import footballBg from "../assets/images/efootbalBG3.png";
 
 function Register() {
+    const [alert, setAlert] = useState({ message: "", type: "" });
+    const navigate = useNavigate();
+    const showAlert = (message, type = "success") => {
+        setAlert({ message, type });
+
+        setTimeout(() => {
+            setAlert({ message: "", type: "" });
+        }, 4000);
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        const name = e.target.name.value;
+        const account_name = e.target.account_name.value;
+        const email = e.target.email.value;
+        const password = e.target.password.value;
+        const confirmPassword = e.target.confirmPassword.value;
+
+        if (password !== confirmPassword) {
+            showAlert("Passwords do not match!", "error");
+            return;
+        }
+        try {
+            const response = await fetch("http://localhost:5000/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, account_name, email, password })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                showAlert(result.message, "success");
+                setTimeout(() => {
+                    navigate("/login");
+                }, 1500);
+            } else {
+                showAlert(result.message || "An unknown error occurred", "error");
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            showAlert("Network error. Please try again.", "error");
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col items-center overflow-x-hidden relative">
             {/* Background Image */}
@@ -16,6 +63,26 @@ function Register() {
                     backgroundAttachment: "fixed"
                 }}
             />
+
+            {/* Alert Notification */}
+            {alert.message && (
+                <div
+                    className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg flex items-center justify-between space-x-4
+                    ${alert.type === "success"
+                        ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
+                        : "bg-red-100 text-red-800 border-red-600"}`}
+                >
+                    <span>{alert.message}</span>
+                    <button
+                        className={`text-xl font-bold ${
+                            alert.type === "success" ? "text-[#2e7d32] hover:text-[#1b5e20]" : "text-red-800 hover:text-red-600"
+                        }`}
+                        onClick={() => setAlert({ message: "", type: "" })}
+                    >
+                        &times;
+                    </button>
+                </div>
+            )}
 
             {/* Header */}
             <header className="w-full flex justify-between items-center px-5 py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
@@ -35,7 +102,7 @@ function Register() {
                 <section className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
                     <h2 className="text-2xl font-bold text-blue-700 mb-6">Register</h2>
 
-                    <form className="flex flex-col gap-4 text-left">
+                    <form className="flex flex-col gap-4 text-left" onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="name" className="block font-medium text-gray-700">Name</label>
                             <input
@@ -98,8 +165,7 @@ function Register() {
                             Register
                         </button>
                     </form>
-
-                    <p className="mt-6 text-gray-700">
+                    <p className="mt-4 text-gray-700">
                         Already have an account?{" "}
                         <Link to="/login" className="text-blue-700 font-semibold hover:underline">
                             Sign In
