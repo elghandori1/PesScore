@@ -87,20 +87,12 @@ function Register() {
             {/* Header */}
             <header className="w-full flex justify-between items-center px-5 py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
                 <h2 className="text-2xl font-bold">PesScore</h2>
-                <div>
-                    <Link
-                        to="/"
-                        className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
-                    >
-                        Back to Home
-                    </Link>
-                </div>
             </header>
 
             {/* Main Content */}
-            <main className="flex flex-1 mt-24 justify-center pb-32 px-1">
+            <main className="flex mt-16 justify-center px-1 mb-3">
                 <section className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center">
-                    <h2 className="text-2xl font-bold text-blue-700 mb-6">Register</h2>
+                    <h2 className="text-2xl font-bold text-blue-700 mb-3">Register</h2>
 
                     <form className="flex flex-col gap-4 text-left" onSubmit={handleSubmit}>
                         <div>

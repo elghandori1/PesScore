@@ -83,18 +83,13 @@ app.post('/login', async (req, res) => {
 
     // Set session user ID
     req.session.userId = user.id;
-
-    res.status(200).json({
-      message: `Login successful`,
-      user: { id: user.id, name: user.name }
-    });
+    res.status(200).json({user: {name: user.name }});
 
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).json({ message: "Internal server error" });
   }
 });
-
 
 // Register endpoint
 app.post("/register", async (req, res) => {
@@ -128,12 +123,11 @@ app.post("/register", async (req, res) => {
     });
 
     if (rows.length > 0) {
-      return res.status(400).json({ message: "Erorr: Account already exists" });
+      return res.status(400).json({ message: "Error: Account already exists" });
     }
 
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
     // Insert into database
     const insertSql = `
       INSERT INTO users (name, account_name, email, password_hashed)
@@ -152,6 +146,42 @@ app.post("/register", async (req, res) => {
     console.error("Error during registration:", err);
     res.status(500).json({ message: "Internal server error" });
   }
+});
+
+app.get("/auth", (req, res) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const userId = req.session.userId;
+
+  db.query("SELECT id, name FROM users WHERE id = ?", [userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = results[0];
+    res.json({ user });
+  });
+});
+
+// Logout route
+app.get('/logout', (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Error destroying session:", err);
+      return res.status(500).json({ message: "Could not log out" });
+    }
+
+    res.clearCookie('connect.sid');
+
+    res.json({ message: "Logout successful" });
+  });
 });
 
 // Start server
