@@ -28,7 +28,8 @@ function Login() {
         credentials: "include",
       });
       if (response.ok) {
-        navigate("/");
+        navigate("/", { replace: true, state: { fromLogin: true } });
+
       } else {
         const result = await response.json();
         showAlert(result.message || "An unknown error occurred");
