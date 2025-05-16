@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link,useLocation } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG3.png";
 
 function Home() {
@@ -7,6 +7,7 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ message: "", type: "" });
   const navigate = useNavigate();
+  const location = useLocation();
 
   // Show alert for 4 seconds
   const showAlert = (message, type = "success") => {
@@ -33,13 +34,7 @@ function Home() {
 
         const data = await response.json();
         const currentUser = data.user;
-
         setUser(currentUser);
-
-        // Show success welcome message
-        if (currentUser?.name) {
-          showAlert(`Hello, ${currentUser.name}!`, "success");
-        }
       } catch (err) {
         console.error("Error fetching user:", err.message);
         navigate("/login");
@@ -51,6 +46,27 @@ function Home() {
     fetchUser();
   }, [navigate]);
 
+    // Show alert from redirected navigation
+    useEffect(() => {
+      const { state } = location;
+    
+      if (!user) return;
+      if (state?.fromLogin) {
+        showAlert(`Hello, ${user.name}!`, "success");
+    
+        setTimeout(() => {
+          navigate(location.pathname, { replace: true });
+        }, 0);
+      }
+    
+      if (state?.alreadyLoggedIn) {
+        showAlert("You're already logged in!", "error");
+        setTimeout(() => {
+          navigate(location.pathname, { replace: true });
+        }, 0);
+      }
+    }, [location, navigate, user]);
+    
   if (loading) return <div>Loading...</div>;
   return (
     <div
