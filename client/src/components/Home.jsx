@@ -1,9 +1,57 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG3.png";
 
 function Home() {
-  
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState({ message: "", type: "" });
+  const navigate = useNavigate();
+
+  // Show alert for 4 seconds
+  const showAlert = (message, type = "success") => {
+    setAlert({ message, type });
+    setTimeout(() => {
+      setAlert({ message: "", type: "" });
+    }, 4000);
+  };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await fetch("http://localhost:5000/auth", {
+          method: "GET",
+          credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          return navigate("/login"); // Redirect if not authenticated
+        }
+
+        const data = await response.json();
+        const currentUser = data.user;
+
+        setUser(currentUser);
+
+        // Show success welcome message
+        if (currentUser?.name) {
+          showAlert(`Hello, ${currentUser.name}!`, "success");
+        }
+      } catch (err) {
+        console.error("Error fetching user:", err.message);
+        navigate("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
+
+  if (loading) return <div>Loading...</div>;
   return (
     <div
       className="min-h-screen flex flex-col items-center overflow-x-hidden relative"
@@ -18,17 +66,50 @@ function Home() {
           backgroundAttachment: "fixed"
         }}
       />
+
+        {/* Alert Notification */}
+        {alert.message && (
+        <div
+          className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg flex items-center justify-between space-x-4 ${
+            alert.type === "success"
+              ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
+              : "bg-red-100 text-red-800 border-red-600"
+          }`}
+        >
+          <span>{alert.message}</span>
+          <button
+            className={`text-xl font-bold ${
+              alert.type === "success"
+                ? "text-[#2e7d32] hover:text-[#1b5e20]"
+                : "text-red-800 hover:text-red-600"
+            }`}
+            onClick={() => setAlert({ message: "", type: "" })}
+          >
+            &times;
+          </button>
+        </div>
+      )}
+      
       {/* Header */}
       <header className="w-full flex justify-between items-center px-5 py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
         <h2 className="text-2xl font-bold" >PesScore</h2>
-        <div>
+      {user ?(<div>
+          <Link
+            to="/logout"
+            className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
+          >
+            Logout
+
+          </Link>
+        </div>):(<div>
           <Link
             to="/login"
             className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
           >
-            Sign In
+                        Sign In
           </Link>
-        </div>
+        </div>)}
+        
       </header>
 
       {/* Main Content */}
