@@ -71,7 +71,7 @@ app.post('/login', async (req, res) => {
     const [users] = await db.promise().query('SELECT * FROM users WHERE email = ?', [email]);
 
     if (users.length === 0) {
-      return res.status(401).json({ message: 'User not found'});
+      return res.status(401).json({ message: 'User not found' });
     }
 
     const user = users[0];
@@ -83,7 +83,7 @@ app.post('/login', async (req, res) => {
 
     // Set session user ID
     req.session.userId = user.id;
-    res.status(200).json({user: {name: user.name }});
+    res.status(200).json({ user: { name: user.name } });
 
   } catch (err) {
     console.error('Database error:', err);
@@ -183,6 +183,29 @@ app.get('/logout', (req, res) => {
     res.json({ message: "Logout successful" });
   });
 });
+
+app.get("/profile", (req, res) => {
+
+  const userId = req.session.userId;
+
+  db.query(
+    "SELECT name, account_name, email, created_at FROM users WHERE id = ?",
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      if (results.length === 0) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ user: results[0] });
+    }
+  );
+});
+
 
 // Start server
 const port = 5000;

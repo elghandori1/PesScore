@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate, Link,useLocation } from "react-router-dom";
+import { useNavigate, Link, useLocation } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG3.png";
+import axios from "axios";
 
 function Home() {
   const [user, setUser] = useState(null);
@@ -20,20 +21,18 @@ function Home() {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/auth", {
-          method: "GET",
-          credentials: "include",
+        const response = await axios.get("http://localhost:5000/auth", {
+          withCredentials: true,
           headers: {
             "Content-Type": "application/json",
           },
         });
 
-        if (!response.ok) {
+        if (response.status !== 200) {
           return navigate("/login"); // Redirect if not authenticated
         }
 
-        const data = await response.json();
-        const currentUser = data.user;
+        const currentUser = response.data.user;
         setUser(currentUser);
       } catch (err) {
         console.error("Error fetching user:", err.message);
@@ -46,27 +45,27 @@ function Home() {
     fetchUser();
   }, [navigate]);
 
-    // Show alert from redirected navigation
-    useEffect(() => {
-      const { state } = location;
-    
-      if (!user) return;
-      if (state?.fromLogin) {
-        showAlert(`Hello, ${user.name}!`, "success");
-    
-        setTimeout(() => {
-          navigate(location.pathname, { replace: true });
-        }, 0);
-      }
-    
-      if (state?.alreadyLoggedIn) {
-        showAlert("You're already logged in!", "error");
-        setTimeout(() => {
-          navigate(location.pathname, { replace: true });
-        }, 0);
-      }
-    }, [location, navigate, user]);
-    
+  // Show alert from redirected navigation
+  useEffect(() => {
+    const { state } = location;
+
+    if (!user) return;
+    if (state?.fromLogin) {
+      showAlert(`Hello, ${user.name}!`, "success");
+
+      setTimeout(() => {
+        navigate(location.pathname, { replace: true });
+      }, 0);
+    }
+
+    if (state?.alreadyLoggedIn) {
+      showAlert("You're already logged in!", "error");
+      setTimeout(() => {
+        navigate(location.pathname, { replace: true });
+      }, 0);
+    }
+  }, [location, navigate, user]);
+
   if (loading) return <div>Loading...</div>;
   return (
     <div
@@ -83,49 +82,59 @@ function Home() {
         }}
       />
 
-        {/* Alert Notification */}
-        {alert.message && (
+      {/* Alert Notification */}
+      {alert.message && (
         <div
-          className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg flex items-center justify-between space-x-4 ${
-            alert.type === "success"
+          className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg flex items-center justify-between space-x-4 ${alert.type === "success"
               ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
               : "bg-red-100 text-red-800 border-red-600"
-          }`}
+            }`}
         >
           <span>{alert.message}</span>
           <button
-            className={`text-xl font-bold ${
-              alert.type === "success"
+            className={`text-xl font-bold ${alert.type === "success"
                 ? "text-[#2e7d32] hover:text-[#1b5e20]"
                 : "text-red-800 hover:text-red-600"
-            }`}
+              }`}
             onClick={() => setAlert({ message: "", type: "" })}
           >
             &times;
           </button>
         </div>
       )}
-      
+
       {/* Header */}
       <header className="w-full flex justify-between items-center px-5 py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
         <h2 className="text-2xl font-bold" >PesScore</h2>
-      {user ?(<div>
+        {user ? (<div className="flex gap-1 justify-between items-center">  
+          {/* User icon (example) */}
           <Link
-            to="/logout"
-            className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
+            to="/profil"
+            className="flex items-center gap-2 bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
           >
-            Logout
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+            </svg>
+            </Link>
 
+            {/* Logout icon */}
+            <Link
+            to="/logout"
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-full transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15m3 0l3-3m0 0l-3-3m3 3H9" />
+            </svg>
           </Link>
-        </div>):(<div>
+        </div>) : (<div>
           <Link
             to="/login"
             className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
           >
-                        Sign In
+            Sign In
           </Link>
         </div>)}
-        
+
       </header>
 
       {/* Main Content */}
@@ -157,7 +166,7 @@ function Home() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
             </svg>
             <span className="text-lg">List Friends</span>
-            </Link>
+          </Link>
 
         </div>
       </main>

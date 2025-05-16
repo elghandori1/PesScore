@@ -4,6 +4,7 @@ import Home from './components/Home.jsx';
 import Login from './components/Login.jsx'; 
 import Register from './components/Register.jsx';
 import Logout from './components/Logout.jsx';
+import Profil from "./components/Profil.jsx";
 
 const PreventLoggedInAccess = () => {
   const [user, setUser] = useState(null);
@@ -56,6 +57,7 @@ export default function App() {
 
       {/* Public Routes */}
       <Route path="/" element={<Home />} />
+      <Route path="/profil" element={<Profil/>}></Route>
       <Route path="/logout" element={<Logout />} />
     </Routes>
   );
