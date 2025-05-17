@@ -5,6 +5,7 @@ import Login from './components/Login.jsx';
 import Register from './components/Register.jsx';
 import Logout from './components/Logout.jsx';
 import Profil from "./components/Profil.jsx";
+import Addfriend from "./components/Addfriend.jsx";
 
 const PreventLoggedInAccess = () => {
   const [user, setUser] = useState(null);
@@ -59,6 +60,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/profil" element={<Profil/>}></Route>
       <Route path="/logout" element={<Logout />} />
+      <Route path="/newfreind" element={<Addfriend/>}></Route>
     </Routes>
   );
 }
