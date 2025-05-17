@@ -209,11 +209,11 @@ function Addfriend() {
                                 {pendingRequests.map((user) => (
                                     <div
                                         key={user.id}
-                                        className="flex justify-between items-center bg-yellow-100 px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg shadow-sm mb-2"
+                                        className="flex justify-between items-center bg-red-100 px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg shadow-sm mb-2"
                                     >
                                         <span className="font-medium text-sm sm:text-base">{user.account_name}</span>
                                         <button onClick={() => handleCancelRequest(user.id)}
-                                            className="text-red-500 font-black p-1 sm:px-2 sm:py-1 rounded-lg hover:text-red-800 transition flex-shrink-0 text-sm sm:text-base"
+                                            className="text-red-500 font-black p-1 sm:px-2 sm:py-1 rounded-lg hover:text-red-700 transition flex-shrink-0 text-sm sm:text-base"
                                             aria-label="Cancel request"
                                         >
                                             Cancel

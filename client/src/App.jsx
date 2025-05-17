@@ -6,6 +6,7 @@ import Register from './components/Register.jsx';
 import Logout from './components/Logout.jsx';
 import Profil from "./components/Profil.jsx";
 import Addfriend from "./components/Addfriend.jsx";
+import Listfriend from "./components/Listfriend.jsx";
 import NotFound from "./components/NotFound.jsx";
 
 const PreventLoggedInAccess = () => {
@@ -62,6 +63,7 @@ export default function App() {
       <Route path="/profil" element={<Profil/>}></Route>
       <Route path="/logout" element={<Logout />} />
       <Route path="/newfreind" element={<Addfriend/>}></Route>
+      <Route path="/listfreind" element={<Listfriend/>}></Route>
         {/* Catch-all 404 Not Found route*/}
         <Route path="*" element={<NotFound />} />
     </Routes>

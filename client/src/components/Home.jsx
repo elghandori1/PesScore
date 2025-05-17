@@ -7,6 +7,7 @@ function Home() {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ message: "", type: "" });
+  const [pendingCount, setPendingCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -45,6 +46,25 @@ function Home() {
     fetchUser();
   }, [navigate]);
 
+  useEffect(() => {
+    const fetchPendingRequests = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/friend-requests", {
+          withCredentials: true,
+        });
+
+        const pending = res.data.pendingRequests || [];
+        setPendingCount(pending.length);
+      } catch (err) {
+        console.error("Failed to fetch pending requests:", err);
+      }
+    };
+
+    if (user) {
+      fetchPendingRequests();
+    }
+  }, [user]);
+  
   // Show alert from redirected navigation
   useEffect(() => {
     const { state } = location;
@@ -165,13 +185,29 @@ function Home() {
           </Link>
 
           <Link
-            to="/list"
-            className="bg-gradient-to-r from-blue-700 to-blue-500 hover:bg-blue-900/90 transform hover:scale-105 transition text-white p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl w-full sm:w-[45%] text-center flex flex-col items-center no-underline shadow-md hover:shadow-lg backdrop-blur-sm"
+            to="/listfreind"
+            className="bg-gradient-to-r from-blue-700 to-blue-500 hover:bg-blue-900/90 transform hover:scale-105 transition text-white p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl w-full sm:w-[45%] text-center flex flex-col items-center no-underline shadow-md hover:shadow-lg relative backdrop-blur-sm"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 mb-1 sm:mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-8 sm:h-10 md:h-12 w-8 sm:w-10 md:w-12 mb-1 sm:mb-2"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+              />
             </svg>
             <span className="text-sm sm:text-base md:text-lg">List Friends</span>
+
+            {/* Notification Dot */}
+            {pendingCount > 0 && (
+              <span className="absolute top-1 right-1 sm:top-2 sm:right-2 inline-block w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full"></span>
+            )}
           </Link>
         </div>
       </main>
