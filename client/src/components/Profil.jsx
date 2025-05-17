@@ -47,17 +47,17 @@ function Profil() {
           backgroundAttachment: "fixed"
         }}
       />
-      <header className="w-full flex justify-between items-center px-5 py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
-        <h2 className="text-2xl font-bold">PesScore</h2>
-        <Link
-          to="/"
-          className="bg-white/20 hover:bg-white/40 text-white font-semibold px-4 py-2 rounded-full transition"
-        >
-          Back to Home
-        </Link>
-      </header>
+       <header className="w-full flex justify-between items-center px-4 sm:px-5 py-3 sm:py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
+                <h2 className="text-xl sm:text-2xl font-bold">PesScore</h2>
+                <Link
+                    to="/"
+                    className="bg-white/20 hover:bg-white/40 text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition text-sm sm:text-base"
+                >
+                    Back to Home
+                </Link>
+            </header>
       <main className="flex flex-col items-center w-full px-5 pb-10">
-      <div className="pt-32 w-full max-w-md">
+      <div className="pt-28 w-full max-w-md">
         <div className="bg-white/20 backdrop-blur-md text-white rounded-2xl shadow-lg p-6 space-y-4">
           <h2 className="text-xl font-bold mb-4">User Profile</h2>
 
