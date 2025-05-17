@@ -239,27 +239,58 @@ app.post('/send-request', (req, res) => {
   if (!userId || !friend_id) {
     return res.status(400).json({ message: "Missing required fields" });
   }
-  // Prevent self-friendship
+
   if (userId === friend_id) {
-    return res.status(400).json({ message: "error same account" });
+    return res.status(400).json({ message: "You cannot add yourself." });
   }
-  // Check if friendship already exists
+
+  // Check for existing friendship or reverse pending request
   const checkSql = `
     SELECT * FROM friendships 
-    WHERE (user_id = ? AND friend_id = ?)
+    WHERE (user_id = ? AND friend_id = ?) 
+       OR (user_id = ? AND friend_id = ?)
   `;
 
-  db.query(checkSql, [userId, friend_id], (err, results) => {
+  db.query(checkSql, [userId, friend_id, friend_id, userId], (err, results) => {
     if (err) {
       console.error("Database error:", err);
       return res.status(500).json({ message: "Internal server error" });
     }
 
     if (results.length > 0) {
-      return res.status(400).json({ message: "Request already sent" });
+      const existing = results[0];
+
+      // Case: Already friends
+      if (existing.status === 'accepted') {
+        return res.status(400).json({ message: "You are already friends." });
+      }
+
+      // Case: You already sent a request
+      if (existing.user_id === userId && existing.status === 'pending') {
+        return res.status(400).json({ message: "Friend request already pending." });
+      }
+
+      // Case: They sent you a request => Auto-accept it
+      if (existing.user_id === friend_id && existing.friend_id === userId && existing.status === 'pending') {
+        const updateSql = `
+          UPDATE friendships 
+          SET status = 'accepted' 
+          WHERE user_id = ? AND friend_id = ?
+        `;
+        return db.query(updateSql, [friend_id, userId], (err) => {
+          if (err) {
+            console.error("Database error:", err);
+            return res.status(500).json({ message: "Internal server error" });
+          }
+
+          return res.json({ message: "Friend request accepted automatically." });
+        });
+      }
+
+      return res.status(400).json({ message: "Friendship request conflict." });
     }
 
-    // Insert new friend request
+    // Insert new request
     const insertSql = `
       INSERT INTO friendships (user_id, friend_id, status)
       VALUES (?, ?, 'pending')
@@ -271,10 +302,11 @@ app.post('/send-request', (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
       }
 
-      res.json({ message: "Friend request sent successfully" });
+      res.json({ message: "Friend request sent successfully." });
     });
   });
 });
+
 
 // GET /pending-requests
 app.get('/pending-requests', (req, res) => {
@@ -326,6 +358,112 @@ app.delete('/friendships/:friendId', (req, res) => {
     }
 
     res.json({ success: true });
+  });
+});
+
+app.get("/friends", (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    SELECT u.id, u.name, u.account_name FROM users u
+    JOIN friendships f ON (
+        (f.user_id = ? AND f.friend_id = u.id)
+        OR (f.friend_id = ? AND f.user_id = u.id)
+    )
+    WHERE f.status = 'accepted'
+  `;
+
+  db.query(sql, [userId, userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    res.json({ friends: results });
+  });
+});
+
+app.get("/friend-requests", (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    SELECT u.id, u.name, u.account_name FROM users u
+    JOIN friendships f ON f.user_id = u.id
+    WHERE f.friend_id = ? AND f.status = 'pending'
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    res.json({ pendingRequests: results });
+  });
+});
+
+app.post("/accept-request", (req, res) => {
+  const { requesterId } = req.body;
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    UPDATE friendships SET status = 'accepted', accepted_at = NOW()
+    WHERE user_id = ? AND friend_id = ? AND status = 'pending'
+  `;
+
+  db.query(sql, [requesterId, userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: "No pending request found" });
+    }
+
+    res.json({ message: "Friend request accepted" });
+  });
+});
+
+app.delete("/remove-friend", (req, res) => {
+  const userId = req.session.userId;
+  const { friendId } = req.body;
+
+  if (!userId || !friendId) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const sql = `
+    DELETE FROM friendships
+    WHERE (
+      (user_id = ? AND friend_id = ?)
+      OR (user_id = ? AND friend_id = ?)
+    )
+  `;
+
+  db.query(sql, [userId, friendId, friendId, userId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: "Friendship not found" });
+    }
+
+    res.json({ message: "Friend removed successfully" });
   });
 });
 

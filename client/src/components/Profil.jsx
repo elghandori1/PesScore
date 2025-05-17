@@ -15,13 +15,12 @@ function Profil() {
             withCredentials: true 
           });
   
-          if (response.status && err.response.status === 401) {
-            navigate("/login");
+          if (response.status && response.status == 401) {
+            throw new Error('Not authenticated');
           }
-  
           setUser(response.data.user);
         } catch (err) {
-          console.error("Error fetching profile:", err);
+          console.error(err);
           navigate("/login");
         } finally {
           setLoading(false);
