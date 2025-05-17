@@ -9,7 +9,7 @@ function Addfriend() {
     const [hasSearched, setHasSearched] = useState(false);
     const [pendingRequests, setPendingRequests] = useState([]);
     const [alert, setAlert] = useState({ message: "", type: "" });
-
+  const navigate = useNavigate();
 
     const showAlert = (message, type = "success") => {
         setAlert({ message, type });
@@ -17,75 +17,87 @@ function Addfriend() {
             setAlert({ message: "", type: "" });
         }, 4000);
     };
-
     const handleSearch = async () => {
         if (search.trim() === "") {
-            showAlert("Search input is empty", "error");
-            return;
+          showAlert("Search input is empty", "error");
+          return;
         }
         try {
-            const res = await axios.get("http://localhost:5000/search-users", {
-                params: { query: search },
-                withCredentials: true,
-            });
-            setUsers(res.data.users);
+          const res = await axios.get("http://localhost:5000/search-users", {
+            params: { query: search },
+            withCredentials: true,
+          });
+          setUsers(res.data.users);
+          setHasSearched(true);
+        } catch (err) {
+          if (err.response?.status === 401) {
+            navigate("/login");
+          } else {
+            console.error("Search error:", err);
+            showAlert("An error occurred while searching", "error");
             setHasSearched(true);
-        } catch (err) {
-            console.error(err);
-            setHasSearched(true);
+          }
         }
-    };
-
-    const fetchPendingRequests = async () => {
+      };
+    
+      const fetchPendingRequests = async () => {
         try {
-            const res = await axios.get("http://localhost:5000/pending-requests", {
-                withCredentials: true,
-            });
-            setPendingRequests(res.data.pending);
+          const res = await axios.get("http://localhost:5000/pending-requests", {
+            withCredentials: true,
+          });
+          setPendingRequests(res.data.pending);
         } catch (err) {
-            console.error(err);
+          if (err.response?.status === 401) {
+            navigate("/login");
+          } else {
+            console.error("Pending request fetch error:", err);
+          }
         }
-    };
-
-    useEffect(() => {
-        fetchPendingRequests();
-    }, []);
-
-    const sendFriendRequest = async (friendId) => {
+      };
+    
+      const sendFriendRequest = async (friendId) => {
         try {
-            const res = await axios.post(
-                "http://localhost:5000/send-request",
-                { friend_id: friendId },
-                { withCredentials: true }
-            );
-
-            fetchPendingRequests();
-            setUsers((prev) => prev.filter((u) => u.id !== friendId));
-            setSearch("");
-            showAlert(res.data.message, "success");
-            setHasSearched(false);
-
+          const res = await axios.post(
+            "http://localhost:5000/send-request",
+            { friend_id: friendId },
+            { withCredentials: true }
+          );
+          fetchPendingRequests();
+          setUsers((prev) => prev.filter((u) => u.id !== friendId));
+          setSearch("");
+          showAlert(res.data.message, "success");
+          setHasSearched(false);
         } catch (err) {
-            console.error("Error sending request:", err.response?.data || err.message);
+          if (err.response?.status === 401) {
+            navigate("/login");
+          } else {
             const errorMessage = err.response?.data?.message || "Failed to send request";
+            console.error("Error sending request:", err);
             showAlert(errorMessage, "error");
+          }
         }
-    };
-
-    const handleCancelRequest = async (friendId) => {
+      };
+    
+      const handleCancelRequest = async (friendId) => {
         try {
-            await axios.delete(`http://localhost:5000/friendships/${friendId}`, {
-                withCredentials: true,
-            });
-            fetchPendingRequests();
+          await axios.delete(`http://localhost:5000/friendships/${friendId}`, {
+            withCredentials: true,
+          });
+          fetchPendingRequests();
         } catch (err) {
+          if (err.response?.status === 401) {
+            navigate("/login");
+          } else {
+            const errorMessage = err.response?.data?.message || "Failed to cancel request";
             console.error("Failed to cancel request:", err);
-            const errorMessage = err.response?.data?.message || "Failed to send request";
             showAlert(errorMessage, "error");
+          }
         }
-    };
-
-
+      };
+    
+      useEffect(() => {
+        fetchPendingRequests();
+      }, []);
     return (
         <div className="min-h-screen flex flex-col items-center overflow-x-hidden relative">
             <div
