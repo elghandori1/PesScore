@@ -72,7 +72,20 @@ function Addfriend() {
         }
     };
 
-    
+    const handleCancelRequest = async (friendId) => {
+        try {
+            await axios.delete(`http://localhost:5000/friendships/${friendId}`, {
+                withCredentials: true,
+            });
+            fetchPendingRequests();
+        } catch (err) {
+            console.error("Failed to cancel request:", err);
+            const errorMessage = err.response?.data?.message || "Failed to send request";
+            showAlert(errorMessage, "error");
+        }
+    };
+
+
     return (
         <div className="min-h-screen flex flex-col items-center overflow-x-hidden relative">
             <div
@@ -172,10 +185,10 @@ function Addfriend() {
                         ) : null}
 
                         {/* Pending Requests Section */}
-                        <p className="text-gray-700 font-semibold mt-4 sm:mt-6 text-sm sm:text-base">
+                        <p className="text-gray-700 font-semibold mt-2 sm:mt-4 text-sm sm:text-base">
                             Pending requests ({pendingRequests ? pendingRequests.length : 0})
                         </p>
-                        <hr className="my-1 sm:my-2 border-gray-300" />
+                        <hr className="border-gray-300"/>
 
                         {pendingRequests.length === 0 ? (
                             <p className="text-gray-500 text-sm sm:text-base">No pending requests</p>
@@ -187,7 +200,7 @@ function Addfriend() {
                                         className="flex justify-between items-center bg-yellow-100 px-3 py-1 sm:px-4 sm:py-1.5 rounded-lg shadow-sm mb-2"
                                     >
                                         <span className="font-medium text-sm sm:text-base">{user.account_name}</span>
-                                        <button
+                                        <button onClick={() => handleCancelRequest(user.id)}
                                             className="text-red-500 font-black p-1 sm:px-2 sm:py-1 rounded-lg hover:text-red-800 transition flex-shrink-0 text-sm sm:text-base"
                                             aria-label="Cancel request"
                                         >

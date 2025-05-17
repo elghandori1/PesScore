@@ -53,7 +53,7 @@ export default function App() {
       {/* Protected Login/Register Routes */}
       <Route element={<PreventLoggedInAccess />}>
         <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/register" element={<Register />} /> 
       </Route>
 
       {/* Public Routes */}
@@ -61,6 +61,7 @@ export default function App() {
       <Route path="/profil" element={<Profil/>}></Route>
       <Route path="/logout" element={<Logout />} />
       <Route path="/newfreind" element={<Addfriend/>}></Route>
+     
     </Routes>
   );
 }

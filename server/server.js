@@ -301,7 +301,33 @@ app.get('/pending-requests', (req, res) => {
   });
 });
 
-// DELETE /friendships/:friendId
+// DELETE /friendships/:friendId (cancel pending request)
+app.delete('/friendships/:friendId', (req, res) => {
+  const userId = req.session.userId;
+  const friendId = req.params.friendId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    DELETE FROM friendships 
+    WHERE user_id = ? AND friend_id = ? AND status = 'pending'
+  `;
+
+  db.query(sql, [userId, friendId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "No pending request found" });
+    }
+
+    res.json({ success: true });
+  });
+});
 
 
 
