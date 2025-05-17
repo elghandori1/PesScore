@@ -206,6 +206,104 @@ app.get("/profile", (req, res) => {
   );
 });
 
+// GET /search-users?query=username
+app.get('/search-users', (req, res) => {
+  const query = req.query.query;
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  db.query(
+    `SELECT id, account_name FROM users 
+     WHERE account_name = ? AND id != ?`,
+     [query, userId]
+     ,
+    (err, results) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      res.json({ users: results });
+    }
+  );
+});
+
+// POST /send-request
+app.post('/send-request', (req, res) => {
+  const userId = req.session.userId;
+  const { friend_id } = req.body;
+
+  if (!userId || !friend_id) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+  // Prevent self-friendship
+  if (userId === friend_id) {
+    return res.status(400).json({ message: "error same account" });
+  }
+  // Check if friendship already exists
+  const checkSql = `
+    SELECT * FROM friendships 
+    WHERE (user_id = ? AND friend_id = ?)
+  `;
+
+  db.query(checkSql, [userId, friend_id], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (results.length > 0) {
+      return res.status(400).json({ message: "Request already sent" });
+    }
+
+    // Insert new friend request
+    const insertSql = `
+      INSERT INTO friendships (user_id, friend_id, status)
+      VALUES (?, ?, 'pending')
+    `;
+
+    db.query(insertSql, [userId, friend_id], (err) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      res.json({ message: "Friend request sent successfully" });
+    });
+  });
+});
+
+// GET /pending-requests
+app.get('/pending-requests', (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    SELECT u.id, u.account_name 
+    FROM friendships f
+    JOIN users u ON f.friend_id = u.id
+    WHERE f.user_id = ? AND f.status = 'pending'
+  `;
+
+  db.query(sql, [userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    res.json({ pending: results });
+  });
+});
+
+// DELETE /friendships/:friendId
+
+
 
 // Start server
 const port = 5000;
