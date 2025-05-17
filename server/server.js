@@ -329,8 +329,6 @@ app.delete('/friendships/:friendId', (req, res) => {
   });
 });
 
-
-
 // Start server
 const port = 5000;
 app.listen(port, () => {

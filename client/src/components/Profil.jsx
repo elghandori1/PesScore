@@ -15,8 +15,8 @@ function Profil() {
             withCredentials: true 
           });
   
-          if (response.status !== 200) {
-            throw new Error('Not authenticated');
+          if (response.status && err.response.status === 401) {
+            navigate("/login");
           }
   
           setUser(response.data.user);
