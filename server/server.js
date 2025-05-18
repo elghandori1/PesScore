@@ -495,6 +495,87 @@ app.delete("/reject-friend", (req, res) => {
   });
 });
 
+//--------
+app.get("/friends/:id", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const friendId = req.params.id;
+
+  try {
+    const [rows] = await db.promise().query(
+      "SELECT id, account_name FROM users WHERE id = ?",
+      [friendId]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "Friend not found" });
+    }
+
+    res.json({ friend: rows[0] });
+  } catch (err) {
+    console.error("Error fetching friend:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/friends/:id/matches", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const friendId = parseInt(req.params.id);
+
+  try {
+    const [matches] = await db.promise().query(
+      `
+      SELECT * FROM matches
+      WHERE 
+        (user1_id = ? AND user2_id = ?)
+        OR
+        (user1_id = ? AND user2_id = ?)
+      ORDER BY date_time DESC
+      `,
+      [userId, friendId, friendId, friendId]
+    );
+    res.json({ matches });
+  } catch (err) {
+    console.error("Error fetching matches:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/matches", async (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  const { opponent_id, user_score, opponent_score } = req.body;
+
+  if (!opponent_id || user_score === undefined || opponent_score === undefined) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    await db.promise().query(
+      "INSERT INTO matches (user1_id, user2_id, user1_score, user2_score) VALUES (?, ?, ?, ?)",
+      [userId, opponent_id, user_score, opponent_score]
+    );
+
+    res.json({ message: "Match saved successfully!" });
+  } catch (err) {
+    console.error("Error saving match:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 // Start server
 const port = 5000;
 app.listen(port, () => {
