@@ -164,7 +164,7 @@ function Home() {
       {/* Main Content */}
       <main className="flex flex-col items-center w-full px-3 sm:px-4 md:px-5 pt-16 sm:pt-20 pb-8 sm:pb-10">
         {/* Description Section */}
-        <section className="bg-white p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-lg text-center max-w-xl w-full backdrop-blur-sm">
+        <section className="bg-white  p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl shadow-lg text-center max-w-xl w-full backdrop-blur-sm">
           <h2 className="text-xl sm:text-2xl mb-3 sm:mb-4 text-blue-700 font-semibold">Description</h2>
           <p className="text-gray-800 text-base sm:text-lg leading-relaxed">
             PesScore is a mobile-friendly web app designed to track and display

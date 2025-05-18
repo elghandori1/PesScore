@@ -451,6 +451,7 @@ app.delete("/remove-friend", (req, res) => {
       (user_id = ? AND friend_id = ?)
       OR (user_id = ? AND friend_id = ?)
     )
+    AND status = 'accepted'
   `;
 
   db.query(sql, [userId, friendId, friendId, userId], (err, result) => {
@@ -460,10 +461,37 @@ app.delete("/remove-friend", (req, res) => {
     }
 
     if (result.affectedRows === 0) {
-      return res.status(400).json({ message: "Friendship not found" });
+      return res.status(400).json({ message: "No accepted friendship found" });
     }
 
     res.json({ message: "Friend removed successfully" });
+  });
+});
+
+app.delete("/reject-friend", (req, res) => {
+  const userId = req.session.userId;
+  const { friendId } = req.body;
+
+  if (!userId || !friendId) {
+    return res.status(400).json({ message: "Missing required fields" });
+  }
+
+  const sql = `
+    DELETE FROM friendships
+    WHERE friend_id = ? AND user_id = ? AND status = 'pending'
+  `;
+
+  db.query(sql, [userId, friendId], (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    if (result.affectedRows === 0) {
+      return res.status(400).json({ message: "No pending request found" });
+    }
+
+    res.json({ message: "Friend request rejected" });
   });
 });
 
