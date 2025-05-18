@@ -81,11 +81,11 @@ function Listfriend() {
             console.error("Failed to remove friend:", err);
         }
     };
-    
+
     const rejectFriend = async (requesterId) => {
         try {
           await axios.delete("http://localhost:5000/reject-friend", {
-            data: { friendId: requesterId }, // we pass requesterId as friendId
+            data: { friendId: requesterId },
             withCredentials: true,
           });
       
@@ -118,7 +118,7 @@ function Listfriend() {
                 </Link>
             </header>
             {/* Main Content */}
-            <main className="flex flex-col items-center w-full px-2 xs:px-3 sm:px-4 md:px-5 pt-14 sm:pt-18 md:pt-20 pb-4 sm:pb-8 md:pb-10">
+            <main className="flex flex-col items-center w-full px-2 xs:px-3 sm:px-4 md:px-5 pt-20 sm:pt-18 md:pt-24 pb-4 sm:pb-8 md:pb-10">
                 <section className="bg-white p-3 xs:p-4 sm:p-5 md:p-6 rounded-lg sm:rounded-xl shadow-md sm:shadow-lg text-center w-full max-w-md sm:max-w-xl">
                     {/* Tabs - Improved mobile sizing */}
 
@@ -156,7 +156,7 @@ function Listfriend() {
                                             Total: {friends.length}
                                         </p>
                                         {friends.map((friend) => (
-                                            <div
+                                            <Link to={`/Details-friend/${friend.id}`}
                                                 key={friend.id}
                                                 className="px-2.5 xs:px-3 py-1.5 flex items-center justify-between bg-gray-100 hover:bg-gray-200 rounded sm:rounded-md shadow-sm transition"
                                             >
@@ -167,7 +167,7 @@ function Listfriend() {
                                                 <button onClick={() => removeFriend(friend.id)} className="text-red-500 font-bold px-2 py-0.5 rounded hover:text-red-700 hover:bg-red-50 transition text-xs xs:text-sm">
                                                     Remove
                                                 </button>
-                                            </div>
+                                            </Link>
                                         ))}
                                     </>
                                 )}
