@@ -81,7 +81,21 @@ function Listfriend() {
             console.error("Failed to remove friend:", err);
         }
     };
-
+    
+    const rejectFriend = async (requesterId) => {
+        try {
+          await axios.delete("http://localhost:5000/reject-friend", {
+            data: { friendId: requesterId }, // we pass requesterId as friendId
+            withCredentials: true,
+          });
+      
+          setPendingRequests((prev) =>
+            prev.filter((r) => r.id !== requesterId)
+          );
+        } catch (err) {
+          console.error("Failed to reject request:", err);
+        }
+      };
     return (
         <div className="min-h-screen flex flex-col items-center overflow-x-hidden relative">
             <div
@@ -179,12 +193,21 @@ function Listfriend() {
                                                     <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{request.name}</p>
                                                     <p className="text-xs sm:text-sm text-gray-600 truncate">@{request.account_name}</p>
                                                 </div>
-                                                <button
+                                                <div className="flex gap-2">
+                                                       <button
                                                     onClick={() => acceptFriend(request.id)}
                                                     className="bg-green-500 hover:bg-green-600 text-white px-2 py-0.5 rounded text-xs xs:text-sm transition"
                                                 >
                                                     Accept
                                                 </button>
+                                                <button onClick={() => rejectFriend(request.id)}
+                                               
+                                                    className="bg-red-500 hover:bg-red-600 text-white px-2 py-0.5 rounded text-xs xs:text-sm transition"
+                                                >
+                                                    reject
+                                                </button>
+                                                </div>
+                                             
                                             </div>
                                         ))}
                                     </>
