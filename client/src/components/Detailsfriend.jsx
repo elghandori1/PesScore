@@ -104,10 +104,10 @@ function Detailsfriend() {
                     return (
                       <li
                         key={match.match_id}
-                        className="border p-3 md:p-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                        className="border p-1 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                       >
                         <div className="flex justify-between items-center w-full">
-                          {/* Left side (Opponent) */}
+                   
                           <div className="flex flex-col items-center w-1/2">
                             <span className="font-medium text-gray-800 text-sm md:text-base mb-1">
                               {isCurrentUserUser1 ? friend.account_name : "Me"}
@@ -120,7 +120,7 @@ function Detailsfriend() {
                           {/* Divider */}
                           <div className="text-gray-400 mx-2">-</div>
 
-                          {/* Right side (You) */}
+                         
                           <div className="flex flex-col items-center w-1/2">
                             <span className="font-medium text-gray-800 text-sm md:text-base mb-1">
                               {isCurrentUserUser1 ? "Me" : friend.account_name}
