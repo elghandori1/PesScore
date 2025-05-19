@@ -1,41 +1,79 @@
 import React, { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate,Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG3.png";
-
 import axios from "axios";
+
 function Detailsfriend() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [friend, setFriend] = useState(null);
   const [matches, setMatches] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+  
+    const fetchCurrentUser = async () => {
+      try {
+        const res = await axios.get('http://localhost:5000/auth', {
+          withCredentials: true,
+        });
+        if (isMounted && res.data.user) {
+          setCurrentUserId(res.data.user.id);
+        }
+      } catch (err) {
+        console.error("Failed to fetch current user:", err);
+      }
+    };
+
     const fetchFriendDetails = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/friends/${id}`, {
+        const res = await axios.get(`http://localhost:5000/friends-score/${id}`, {
           withCredentials: true,
         });
-        setFriend(res.data.friend);
+  
+        if (isMounted) {
+          setFriend(res.data.friend);
+        }
       } catch (err) {
-        console.error("Failed to fetch friend details", err);
+        if (err.response?.status === 401) {
+          navigate("/login");
+        } else {
+          console.error("Failed to fetch friend details:", err);
+        }
       }
     };
-
+  
     const fetchMatches = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/friends/${id}/matches`, {
+        const res = await axios.get(`http://localhost:5000/matches-score/${id}/`, {
           withCredentials: true,
         });
-
-        setMatches(res.data.matches);
+  
+        if (isMounted) {
+          setMatches(res.data.matches);
+        }
       } catch (err) {
-        console.error("Failed to fetch matches", err);
+        if (err.response?.status === 401) {
+          navigate("/login");
+        } else {
+          console.error("Failed to fetch matches:", err);
+        }
       }
     };
-
+  
+    fetchCurrentUser();
     fetchFriendDetails();
     fetchMatches();
-  }, [id]);
+  
+    return () => {
+      isMounted = false;
+    };
+  }, [id, navigate]);
 
+  if (!friend || !currentUserId) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="min-h-screen flex flex-col items-center overflow-x-hidden relative">
       {/* Background */}
@@ -73,7 +111,7 @@ function Detailsfriend() {
 
                 <div className="flex flex-col sm:flex-row justify-between items-center mt-3 gap-3">
                   <span className="text-sm md:text-base font-medium text-gray-600">
-                    Total Matches: <span className="font-semibold">{matches.length}</span>
+                    Total Matches: <span className="font-semibold text-blue-600">{matches.length}</span>
                   </span>
                   <Link
                     to={`/newmatch/${id}`}
@@ -92,8 +130,9 @@ function Detailsfriend() {
                 <hr className="border-gray-200" />
               </div>
               <ul className="space-y-3 md:space-y-4">
+                <div className="max-h-[380px] overflow-y-auto">
                 {matches.length === 0 ? (
-                  <li className="text-gray-500 text-center py-4">No matches yet. Start by adding one!</li>
+                  <li className="text-gray-500 text-center py-3">No matches yet. Start by adding one!</li>
                 ) : (
                   matches.map((match) => {
                     const isCurrentUserUser1 = parseInt(match.user1_id) === parseInt(id);
@@ -104,7 +143,7 @@ function Detailsfriend() {
                     return (
                       <li
                         key={match.match_id}
-                        className="border p-1 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
+                        className="my-2 border p-1 rounded-lg bg-white shadow-sm hover:shadow-md transition-shadow duration-200"
                       >
                         <div className="flex justify-between items-center w-full">
                    
@@ -139,6 +178,7 @@ function Detailsfriend() {
                     );
                   })
                 )}
+                </div>
               </ul>
             </>
           ) : (
