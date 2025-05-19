@@ -105,7 +105,9 @@ app.post("/register", async (req, res) => {
   if (!emailRegex.test(email)) {
     return res.status(400).json({ message: "Error: Invalid email format" });
   }
-
+  if(account_name.length >10){
+    return res.status(400).json({ message: "Error: Maximum 10 characters for Account Name" });
+  }
   // Validate password length
   if (password.length < 8) {
     return res.status(400).json({ message: "Error: Password must be at least 8 characters" });
@@ -123,7 +125,7 @@ app.post("/register", async (req, res) => {
     });
 
     if (rows.length > 0) {
-      return res.status(400).json({ message: "Error: Account already exists" });
+      return res.status(400).json({ message: "Account already exists change Email or Account Name" });
     }
     const hashedPassword = await bcrypt.hash(password, 10);
     const insertSql = `
@@ -537,18 +539,17 @@ app.get("/friends-score/:id", (req, res) => {
     res.json({ friend: results[0] });
   });
 });
-
-app.get("/matches-score/:id/", async (req, res) => {
+// Get matches between users (both pending and accepted)
+app.get("/matches-score/:friendId", async (req, res) => {
   const userId = req.session.userId;
+  const friendId = req.params.friendId;
 
   if (!userId) {
     return res.status(401).json({ error: "Not authenticated" });
   }
 
-  const friendId = parseInt(req.params.id);
-
   try {
-    // First verify they are friends
+    // Verify friendship
     const [friendship] = await db.promise().query(
       `SELECT * FROM friendships 
        WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) 
@@ -560,11 +561,10 @@ app.get("/matches-score/:id/", async (req, res) => {
       return res.status(403).json({ error: "You can only view matches with friends" });
     }
 
-    // Then get all matches between them
+    // Get all matches between these users
     const [matches] = await db.promise().query(
       `SELECT * FROM matches
-       WHERE (user1_id = ? AND user2_id = ?)
-       OR (user1_id = ? AND user2_id = ?)
+       WHERE ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?))
        ORDER BY date_time DESC`,
       [userId, friendId, friendId, userId]
     );
@@ -575,32 +575,156 @@ app.get("/matches-score/:id/", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// Create a new match request
 app.post("/new-matches", async (req, res) => {
   const userId = req.session.userId;
+  const { opponent_id, user_score, opponent_score } = req.body;
 
   if (!userId) {
     return res.status(401).json({ error: "Not authenticated" });
   }
 
-  const { opponent_id, user_score, opponent_score } = req.body;
-
-  if (!opponent_id || user_score === undefined || opponent_score === undefined) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
   try {
-    await db.promise().query(
-      "INSERT INTO matches (user1_id, user2_id, user1_score, user2_score) VALUES (?, ?, ?, ?)",
-      [userId, opponent_id, user_score, opponent_score]
+    // Verify friendship exists
+    const [friendship] = await db.promise().query(
+      `SELECT * FROM friendships 
+       WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) 
+       AND status = 'accepted'`,
+      [userId, opponent_id, opponent_id, userId]
     );
 
-    res.json({ message: "Match saved successfully!" });
+    if (friendship.length === 0) {
+      return res.status(403).json({ error: "You can only create matches with friends" });
+    }
+
+    // Create new match request
+    const [result] = await db.promise().query(
+      `INSERT INTO matches 
+       (user1_id, user2_id, user1_score, user2_score, requester_id, status)
+       VALUES (?, ?, ?, ?, ?, 'pending')`,
+      [userId, opponent_id, user_score, opponent_score, userId]
+    );
+
+    res.json({ 
+      message: "Match request sent successfully",
+      match_id: result.insertId
+    });
   } catch (err) {
-    console.error("Error saving match:", err);
+    console.error("Error creating match request:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
+// Cancel a pending match (only by requester)
+app.delete("/matches/:matchId/cancel", async (req, res) => {
+  const userId = req.session.userId;
+  const matchId = req.params.matchId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    // Verify the user is the requester of this pending match
+    const [match] = await db.promise().query(
+      `SELECT * FROM matches 
+       WHERE match_id = ? 
+       AND requester_id = ? 
+       AND status = 'pending'`,
+      [matchId, userId]
+    );
+
+    if (match.length === 0) {
+      return res.status(404).json({ error: "Match request not found or you don't have permission to cancel it" });
+    }
+
+    // Delete the match request
+    await db.promise().query(
+      `DELETE FROM matches WHERE match_id = ?`,
+      [matchId]
+    );
+
+    res.json({ message: "Match request canceled successfully" });
+  } catch (err) {
+    console.error("Error canceling match:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Accept a pending match (by receiver)
+app.post("/matches/:matchId/accept", async (req, res) => {
+  const userId = req.session.userId;
+  const matchId = req.params.matchId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    // Verify the user is the receiver of this pending match
+    const [match] = await db.promise().query(
+      `SELECT * FROM matches 
+       WHERE match_id = ? 
+       AND requester_id != ? 
+       AND status = 'pending'
+       AND (user1_id = ? OR user2_id = ?)`,
+      [matchId, userId, userId, userId]
+    );
+
+    if (match.length === 0) {
+      return res.status(404).json({ error: "Match request not found or you don't have permission to accept it" });
+    }
+
+    // Update match status to accepted
+    await db.promise().query(
+      `UPDATE matches SET status = 'accepted' WHERE match_id = ?`,
+      [matchId]
+    );
+
+    res.json({ message: "Match accepted successfully" });
+  } catch (err) {
+    console.error("Error accepting match:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// Reject a pending match (by receiver)
+app.post("/matches/:matchId/reject", async (req, res) => {
+  const userId = req.session.userId;
+  const matchId = req.params.matchId;
+
+  if (!userId) {
+    return res.status(401).json({ error: "Not authenticated" });
+  }
+
+  try {
+    // Verify the user is the receiver of this pending match
+    const [match] = await db.promise().query(
+      `SELECT * FROM matches 
+       WHERE match_id = ? 
+       AND requester_id != ? 
+       AND status = 'pending'
+       AND (user1_id = ? OR user2_id = ?)`,
+      [matchId, userId, userId, userId]
+    );
+
+    if (match.length === 0) {
+      return res.status(404).json({ error: "Match request not found or you don't have permission to reject it" });
+    }
+
+    // Update match status to rejected
+    await db.promise().query(
+      `UPDATE matches SET status = 'rejected' WHERE match_id = ?`,
+      [matchId]
+    );
+
+    res.json({ message: "Match rejected successfully" });
+  } catch (err) {
+    console.error("Error rejecting match:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 // Start server
 const port = 5000;
 app.listen(port, () => {
