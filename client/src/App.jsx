@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios";
 import { Routes, Route ,Navigate, Outlet } from "react-router-dom";
 import Home from './components/Home.jsx';
 import Login from './components/Login.jsx'; 
@@ -18,18 +19,14 @@ const PreventLoggedInAccess = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await fetch("http://localhost:5000/auth", {
-          method: "GET",
-          credentials: "include",
+        const response = await axios.get("http://localhost:5000/auth", {
+          withCredentials: true,
           headers: {
             "Content-Type": "application/json",
           },
         });
-
-        if (response.ok) {
-          const data = await response.json();
-          setUser(data.user);
-        }
+      
+        setUser(response.data.user);
       } catch (err) {
         console.error("Auth check failed:", err);
       } finally {
@@ -41,7 +38,11 @@ const PreventLoggedInAccess = () => {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return  (
+      <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+  );
   }
 
   if (user) {

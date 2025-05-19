@@ -125,10 +125,7 @@ app.post("/register", async (req, res) => {
     if (rows.length > 0) {
       return res.status(400).json({ message: "Error: Account already exists" });
     }
-
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-    // Insert into database
     const insertSql = `
       INSERT INTO users (name, account_name, email, password_hashed)
       VALUES (?, ?, ?, ?)
@@ -148,10 +145,14 @@ app.post("/register", async (req, res) => {
   }
 });
 
-app.get("/auth", (req, res) => {
+function ensureAuthenticated(req, res, next) {
   if (!req.session.userId) {
     return res.status(401).json({ message: "Not authenticated" });
   }
+  next();
+}
+
+app.get("/auth",ensureAuthenticated, (req, res) => {
 
   const userId = req.session.userId;
 
@@ -374,7 +375,7 @@ app.get("/friends", (req, res) => {
         (f.user_id = ? AND f.friend_id = u.id)
         OR (f.friend_id = ? AND f.user_id = u.id)
     )
-    WHERE f.status = 'accepted'
+    WHERE f.status = 'accepted' ORDER BY f.accepted_at DESC
   `;
 
   db.query(sql, [userId, userId], (err, results) => {
@@ -397,7 +398,7 @@ app.get("/friend-requests", (req, res) => {
   const sql = `
     SELECT u.id, u.name, u.account_name FROM users u
     JOIN friendships f ON f.user_id = u.id
-    WHERE f.friend_id = ? AND f.status = 'pending'
+    WHERE f.friend_id = ? AND f.status = 'pending' ORDER BY f.requested_at DESC
   `;
 
   db.query(sql, [userId], (err, results) => {
@@ -441,8 +442,12 @@ app.delete("/remove-friend", (req, res) => {
   const userId = req.session.userId;
   const { friendId } = req.body;
 
-  if (!userId || !friendId) {
-    return res.status(400).json({ message: "Missing required fields" });
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  
+  if (!friendId) {
+    return res.status(400).json({ message: "Missing friend ID" });
   }
 
   const sql = `
@@ -472,8 +477,12 @@ app.delete("/reject-friend", (req, res) => {
   const userId = req.session.userId;
   const { friendId } = req.body;
 
-  if (!userId || !friendId) {
-    return res.status(400).json({ message: "Missing required fields" });
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+  
+  if (!friendId) {
+    return res.status(400).json({ message: "Missing friend ID" });
   }
 
   const sql = `
@@ -495,34 +504,41 @@ app.delete("/reject-friend", (req, res) => {
   });
 });
 
-//--------
-app.get("/friends/:id", async (req, res) => {
+app.get("/friends-score/:id", (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
-    return res.status(401).json({ error: "Not authenticated" });
+    return res.status(401).json({ message: "Not authenticated" });
   }
 
   const friendId = req.params.id;
 
-  try {
-    const [rows] = await db.promise().query(
-      "SELECT id, account_name FROM users WHERE id = ?",
-      [friendId]
-    );
+  // Optional: check if this friendId belongs to their list of friends
+  const sql = `
+    SELECT * FROM users
+    WHERE id = ?
+    AND id IN (
+      SELECT CASE WHEN user_id = ? THEN friend_id ELSE user_id END
+      FROM friendships
+      WHERE (user_id = ? OR friend_id = ?) AND status = 'accepted'
+    )
+  `;
 
-    if (rows.length === 0) {
-      return res.status(404).json({ error: "Friend not found" });
+  db.query(sql, [friendId, userId, userId, userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
     }
 
-    res.json({ friend: rows[0] });
-  } catch (err) {
-    console.error("Error fetching friend:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
+    if (results.length === 0) {
+      return res.status(404).json({ message: "Friend not found or not accepted" });
+    }
+
+    res.json({ friend: results[0] });
+  });
 });
 
-app.get("/friends/:id/matches", async (req, res) => {
+app.get("/matches-score/:id/", async (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {
@@ -532,25 +548,34 @@ app.get("/friends/:id/matches", async (req, res) => {
   const friendId = parseInt(req.params.id);
 
   try {
-    const [matches] = await db.promise().query(
-      `
-      SELECT * FROM matches
-      WHERE 
-        (user1_id = ? AND user2_id = ?)
-        OR
-        (user1_id = ? AND user2_id = ?)
-      ORDER BY date_time DESC
-      `,
-      [userId, friendId, friendId, friendId]
+    // First verify they are friends
+    const [friendship] = await db.promise().query(
+      `SELECT * FROM friendships 
+       WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)) 
+       AND status = 'accepted'`,
+      [userId, friendId, friendId, userId]
     );
+
+    if (friendship.length === 0) {
+      return res.status(403).json({ error: "You can only view matches with friends" });
+    }
+
+    // Then get all matches between them
+    const [matches] = await db.promise().query(
+      `SELECT * FROM matches
+       WHERE (user1_id = ? AND user2_id = ?)
+       OR (user1_id = ? AND user2_id = ?)
+       ORDER BY date_time DESC`,
+      [userId, friendId, friendId, userId]
+    );
+
     res.json({ matches });
   } catch (err) {
     console.error("Error fetching matches:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
-app.post("/matches", async (req, res) => {
+app.post("/new-matches", async (req, res) => {
   const userId = req.session.userId;
 
   if (!userId) {

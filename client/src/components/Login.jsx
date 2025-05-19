@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import footballBg from "../assets/images/efootbalBG3.png";
 
 function Login() {
@@ -21,22 +22,23 @@ function Login() {
     const password = e.target.password.value;
 
     try {
-      const response = await fetch("http://localhost:5000/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-        credentials: "include",
-      });
-      if (response.ok) {
-        navigate("/", { replace: true, state: { fromLogin: true } });
+      const response = await axios.post(
+        "http://localhost:5000/login",
+        { email, password },
+        {
+          headers: { "Content-Type": "application/json" },
+          withCredentials: true,
+        }
+      );
+      navigate("/", { replace: true, state: { fromLogin: true } });
 
-      } else {
-        const result = await response.json();
-        showAlert(result.message || "An unknown error occurred");
-      }
     } catch (err) {
-      console.error("Login error:", err);
-      showAlert("Something went wrong. Please try again.");
+      if (err.response && err.response.data && err.response.data.message) {
+        showAlert(err.response.data.message);
+      } else {
+        console.error("Login error:", err);
+        showAlert("Something went wrong. Please try again.");
+      }
     }
   };
 

@@ -29,8 +29,8 @@ function Home() {
           },
         });
 
-        if (response.status !== 200) {
-          return navigate("/login"); // Redirect if not authenticated
+        if (response.status == 401) {
+          return navigate("/login");
         }
 
         const currentUser = response.data.user;
@@ -51,6 +51,9 @@ function Home() {
       try {
         const res = await axios.get("http://localhost:5000/friend-requests", {
           withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
 
         const pending = res.data.pendingRequests || [];

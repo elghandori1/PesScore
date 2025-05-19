@@ -7,55 +7,75 @@ function Listfriend() {
     const [activeTab, setActiveTab] = useState("users");
     const [friends, setFriends] = useState([]);
     const [pendingRequests, setPendingRequests] = useState([]);
-    const [searchQuery, setSearchQuery] = useState("")
+    const [searchQuery, setSearchQuery] = useState("");
+    const [alert, setAlert] = useState({ message: '', type: '' });
     const navigate = useNavigate();
+    
     const tabs = [
         { id: "users", label: "List Users" },
         { id: "pending", label: "Pending Requests" },
         { id: "notifications", label: "Notifications" },
     ];
 
-    useEffect(() => {
-        const fetchFriends = async () => {
-            try {
-                const res = await axios.get("http://localhost:5000/friends", {
-                    withCredentials: true,
-                });
-                setFriends(res.data.friends);
-            } catch (err) {
-                if (err.response?.status === 401) {
-                    navigate("/login");
-                } else {
-                    console.error("Failed to fetch friends:", err);
-                }
-            }
-        };
-
-        const fetchPendingRequests = async () => {
-            try {
-                const res = await axios.get("http://localhost:5000/friend-requests", {
-                    withCredentials: true,
-                });
-                setPendingRequests(res.data.pendingRequests);
-            } catch (err) {
-                if (err.response?.status === 401) {
-                    navigate("/login");
-                } else {
-                    console.error("Failed to fetch pending requests:", err);
-                }
-            }
-        };
-
-        if (activeTab === "users") {
-            fetchFriends();
-        } else if (activeTab === "pending") {
-            fetchPendingRequests();
+    const handleApiError = (err) => {
+        if (err.response?.status === 401) {
+            navigate("/login");
+        } else {
+            console.error("API error:", err);
+            setAlert({
+                message: 'An error occurred. Please try again.',
+                type: 'error'
+            });
+            setTimeout(() => setAlert({ message: '', type: '' }), 3000);
         }
-
-        fetchPendingRequests();
-
-    }, [activeTab]);
-
+    };
+    useEffect(() => {
+        const fetchInitialData = async () => {
+            try {
+                // Fetch both friends and pending requests when component mounts
+                const [friendsRes, pendingRes] = await Promise.all([
+                    axios.get("http://localhost:5000/friends", { withCredentials: true }),
+                    axios.get("http://localhost:5000/friend-requests", { withCredentials: true })
+                ]);
+                
+                setFriends(friendsRes.data.friends);
+                setPendingRequests(pendingRes.data.pendingRequests);
+            } catch (err) {
+                handleApiError(err);
+            }
+        };
+    
+        const fetchTabData = async () => {
+            try {
+                if (activeTab === "users") {
+                    const res = await axios.get("http://localhost:5000/friends", {
+                        withCredentials: true,
+                    });
+                    setFriends(res.data.friends);
+                } else if (activeTab === "pending") {
+                    const res = await axios.get("http://localhost:5000/friend-requests", {
+                        withCredentials: true,
+                    });
+                    setPendingRequests(res.data.pendingRequests);
+                }
+            } catch (err) {
+                handleApiError(err);
+            }
+        };
+    
+        // On initial load, fetch all data
+        if (friends.length === 0 && pendingRequests.length === 0) {
+            fetchInitialData();
+        } else {
+            fetchTabData();
+        }
+    }, [activeTab, navigate]);
+    
+    useEffect(() => {
+        return () => {
+            setPendingRequests([]);
+        };
+    }, []);
 
     const acceptFriend = async (id) => {
         try {
@@ -64,9 +84,23 @@ function Listfriend() {
                 { requesterId: id },
                 { withCredentials: true }
             );
-            setActiveTab("users");
+
+            setAlert({
+                message: 'Friend request accepted successfully!',
+                type: 'success'
+            });
+            setTimeout(() => setAlert({ message: '', type: '' }), 3000);
+
+            // Refresh data
+            const [friendsRes, pendingRes] = await Promise.all([
+                axios.get("http://localhost:5000/friends", { withCredentials: true }),
+                axios.get("http://localhost:5000/friend-requests", { withCredentials: true })
+            ]);
+            
+            setFriends(friendsRes.data.friends);
+            setPendingRequests(pendingRes.data.pendingRequests);
         } catch (err) {
-            console.error("Accept failed", err);
+            handleApiError(err);
         }
     };
 
@@ -77,9 +111,14 @@ function Listfriend() {
                 withCredentials: true,
             });
 
-            setFriends((prev) => prev.filter((f) => f.id !== friendId));
+            setFriends(prev => prev.filter(f => f.id !== friendId));
+            setAlert({
+                message: 'Friend removed successfully',
+                type: 'success'
+            });
+            setTimeout(() => setAlert({ message: '', type: '' }), 3000);
         } catch (err) {
-            console.error("Failed to remove friend:", err);
+            handleApiError(err);
         }
     };
 
@@ -90,11 +129,14 @@ function Listfriend() {
                 withCredentials: true,
             });
 
-            setPendingRequests((prev) =>
-                prev.filter((r) => r.id !== requesterId)
-            );
+            setPendingRequests(prev => prev.filter(r => r.id !== requesterId));
+            setAlert({
+                message: 'Friend request rejected',
+                type: 'success'
+            });
+            setTimeout(() => setAlert({ message: '', type: '' }), 3000);
         } catch (err) {
-            console.error("Failed to reject request:", err);
+            handleApiError(err);
         }
     };
     const filteredFriends = friends.filter((friend) =>
@@ -114,6 +156,16 @@ function Listfriend() {
                     backgroundAttachment: "fixed"
                 }}
             />
+            {alert.message && (
+                <div
+                    className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg ${alert.type === "success"
+                            ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
+                            : "bg-red-100 text-red-800 border-red-600"
+                        }`}
+                >
+                    {alert.message}
+                </div>
+            )}
             <header className="w-full flex justify-between items-center px-4 sm:px-5 py-3 sm:py-4 text-white fixed top-0 left-0 z-10 bg-black/60">
                 <h2 className="text-xl sm:text-2xl font-bold">PesScore</h2>
                 <Link
@@ -137,6 +189,7 @@ function Listfriend() {
                                     }`}
                             >
                                 {tab.label}
+                                {/* Notification dot for Pending Requests */}
                                 {tab.id === "pending" && pendingRequests.length > 0 && (
                                     <span className="ml-0.5 sm:top-2 sm:right-2 inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
                                 )}
@@ -150,7 +203,7 @@ function Listfriend() {
                                 <div className="flex justify-between items-center w-full mb-2">
                                     {/* Total Friends Count - Left Side */}
                                     <p className="text-gray-700 font-medium sm:font-semibold text-xs xs:text-sm sm:text-base whitespace-nowrap">
-                                        Total: {friends.length}
+                                        Total: <span className="text-blue-600">{friends ? (friends.length) : (0)}</span>
                                     </p>
 
                                     {/* Search Input - Right Side */}
