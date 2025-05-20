@@ -260,69 +260,98 @@ function Detailsfriend() {
               </div>
             ) : (
               <ul className="space-y-3">
-              {filteredMatches.map((match) => {
-                const isUser1CurrentUser = parseInt(match.user1_id) === parseInt(currentUserId);
-                const dateString = new Date(match.date_time).toLocaleDateString();
-            
-                return (
-                  <li
-                    key={match.match_id}
-                    className={`border rounded-lg p-3 ${activeTab === "pending" ? "bg-yellow-50" : "bg-white"}`}
-                  >
-                    {/* Match Content Row */}
-                    <div className="flex justify-between items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
-                      
-                      {/* Left - You */}
-                      <div className="text-center flex-1 min-w-[80px]">
-                        <p className="font-medium text-gray-800">You</p>
-                        <p className="text-base sm:text-lg font-bold text-red-500">{match.user1_score}</p>
+                {filteredMatches.map((match) => {
+                  const isUser1CurrentUser = parseInt(match.user1_id) === parseInt(currentUserId);
+                  const dateString = new Date(match.date_time).toLocaleDateString();
+
+                  return (
+                    <li
+                      key={match.match_id}
+                      className={`border rounded-lg p-3 ${activeTab === "pending" ? "bg-yellow-50" : "bg-white"}`}
+                    >
+                      {/* Match Content Row */}
+                      {/* Match Scores */}
+                      <div className="flex justify-between items-center gap-2 text-xs sm:text-sm whitespace-nowrap">
+                        {/* You (Dynamic based on who is user1 or user2) */}
+                        <div className="text-center flex-1 min-w-[80px]">
+                          <p className="font-medium text-gray-800">You</p>
+                          <p className="text-base sm:text-lg font-bold text-red-500">
+                            {parseInt(match.user1_id) === parseInt(currentUserId)
+                              ? match.user1_score
+                              : parseInt(match.user2_id) === parseInt(currentUserId)
+                                ? match.user2_score
+                                : "--"}
+                          </p>
+                        </div>
+
+                        {/* Center - vs or created by */}
+                        <div className="text-center px-2">
+                          {activeTab === "pending" ? (
+                            <b className="text-blue-500 text-sm sm:text-md block">vs</b>
+                          ) : (
+                            <>
+                              <small className="text-blue-500 text-[10px] sm:text-xs block mb-0.5">created by</small>
+                              <b className="text-xs sm:text-sm">
+                                {match.requester_id === currentUserId ? "Me" : friend.account_name}
+                              </b>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Friend */}
+                        <div className="text-center flex-1 min-w-[80px]">
+                          <p className="font-medium text-gray-800">{friend.account_name}</p>
+                          <p className="text-base sm:text-lg font-bold text-red-500">
+                            {parseInt(match.user1_id) === parseInt(currentUserId)
+                              ? match.user2_score
+                              : parseInt(match.user2_id) === parseInt(currentUserId)
+                                ? match.user1_score
+                                : "--"}
+                          </p>
+                        </div>
                       </div>
-            
-                      {/* Center - Match Creator Info or vs */}
-                      <div className="text-center px-2">
-                        {activeTab === "pending" ? (
-                          <b className="text-blue-500 text-sm sm:text-md block">vs</b>
-                        ) : (
-                          <>
-                            <small className="text-blue-500 text-[10px] sm:text-xs block mb-0.5">created by</small>
-                            <b className="text-xs sm:text-sm">{isUser1CurrentUser ? friend.account_name : "Me"}</b>
-                          </>
-                        )}
+
+                      {/* Date */}
+                      <div className="mt-2 text-center text-[10px] sm:text-xs text-gray-500">
+                        {dateString}
                       </div>
-            
-                      {/* Right - Friend */}
-                      <div className="text-center flex-1 min-w-[80px]">
-                        <p className="font-medium text-gray-800">{friend.account_name}</p>
-                        <p className="text-base sm:text-lg font-bold text-red-500">{match.user2_score}</p>
-                      </div>
-                    </div>
-            
-                    {/* Date */}
-                    <div className="mt-2 text-center text-[10px] sm:text-xs text-gray-500">
-                      {dateString}
-                    </div>
-            
-                    {/* Pending Actions */}
-                    {activeTab === "pending" && (
-                      <div className="flex justify-center items-center gap-3 mt-3 flex-wrap">
-                        <button
-                          onClick={() => handleAcceptMatch(match.match_id)}
-                          className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
-                        >
-                          Accept
-                        </button>
-                        <button
-                          onClick={() => handleRejectMatch(match.match_id)}
-                          className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+
+                      {/* Pending Actions */}
+                      {activeTab === "pending" && (
+                        <div className="flex justify-center items-center gap-3 mt-3 flex-wrap">
+                          {/* Only show Cancel button if current user is the requester */}
+                          {match.requester_id === currentUserId && (
+                            <button
+                              onClick={() => handleCancelMatch(match.match_id)}
+                              className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                            >
+                              Cancel
+                            </button>
+                          )}
+
+                          {/* Show Accept and Reject buttons only if current user is NOT the requester */}
+                          {match.requester_id !== currentUserId && (
+                            <>
+                              <button
+                                onClick={() => handleAcceptMatch(match.match_id)}
+                                className="px-3 py-1 bg-green-500 text-white rounded text-xs hover:bg-green-600"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                onClick={() => handleRejectMatch(match.match_id)}
+                                className="px-3 py-1 bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                              >
+                                Reject
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </section>
