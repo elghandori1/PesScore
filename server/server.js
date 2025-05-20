@@ -447,31 +447,47 @@ app.delete("/remove-friend", (req, res) => {
   if (!userId) {
     return res.status(401).json({ message: "Not authenticated" });
   }
-  
   if (!friendId) {
     return res.status(400).json({ message: "Missing friend ID" });
   }
 
-  const sql = `
-    DELETE FROM friendships
-    WHERE (
-      (user_id = ? AND friend_id = ?)
-      OR (user_id = ? AND friend_id = ?)
-    )
-    AND status = 'accepted'
+  // First delete all matches between these two users
+  const deleteMatchesSql = `
+    DELETE FROM matches
+    WHERE (user1_id = ? AND user2_id = ?)
+       OR (user1_id = ? AND user2_id = ?)
   `;
 
-  db.query(sql, [userId, friendId, friendId, userId], (err, result) => {
-    if (err) {
-      console.error("Database error:", err);
-      return res.status(500).json({ message: "Internal server error" });
+  db.query(deleteMatchesSql, [userId, friendId, friendId, userId], (matchErr, matchResult) => {
+    if (matchErr) {
+      console.error("Error deleting matches:", matchErr);
+      return res.status(500).json({ message: "Failed to delete match history" });
     }
 
-    if (result.affectedRows === 0) {
-      return res.status(400).json({ message: "No accepted friendship found" });
-    }
+    // Then delete the friendship
+    const deleteFriendshipSql = `
+      DELETE FROM friendships
+      WHERE (
+        (user_id = ? AND friend_id = ?)
+        OR (user_id = ? AND friend_id = ?)
+      )
+      AND status = 'accepted'
+    `;
 
-    res.json({ message: "Friend removed successfully" });
+    db.query(deleteFriendshipSql, [userId, friendId, friendId, userId], (friendErr, friendResult) => {
+      if (friendErr) {
+        console.error("Database error:", friendErr);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+
+      if (friendResult.affectedRows === 0) {
+        return res.status(400).json({ message: "No accepted friendship found" });
+      }
+
+      res.json({
+        message: "Friend and all related match data removed successfully"
+      });
+    });
   });
 });
 
@@ -514,8 +530,6 @@ app.get("/friends-score/:id", (req, res) => {
   }
 
   const friendId = req.params.id;
-
-  // Optional: check if this friendId belongs to their list of friends
   const sql = `
     SELECT * FROM users
     WHERE id = ?
@@ -539,6 +553,7 @@ app.get("/friends-score/:id", (req, res) => {
     res.json({ friend: results[0] });
   });
 });
+
 // Get matches between users (both pending and accepted)
 app.get("/matches-score/:friendId", async (req, res) => {
   const userId = req.session.userId;
@@ -614,6 +629,29 @@ app.post("/new-matches", async (req, res) => {
     console.error("Error creating match request:", err);
     res.status(500).json({ error: "Internal server error" });
   }
+});
+
+app.get("/match-requests", (req, res) => {
+  const userId = req.session.userId;
+
+  if (!userId) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  const sql = `
+    SELECT * FROM matches
+    WHERE ((user1_id = ? OR user2_id = ?) AND status = 'pending')
+      AND requester_id != ?
+  `;
+
+  db.query(sql, [userId, userId, userId], (err, results) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+
+    res.json({ pendingMatch: results });
+  });
 });
 
 // Cancel a pending match (only by requester)
