@@ -8,6 +8,7 @@ function Home() {
   const [loading, setLoading] = useState(true);
   const [alert, setAlert] = useState({ message: "", type: "" });
   const [pendingCount, setPendingCount] = useState(0);
+  const [matchCount, setMatchCount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -62,9 +63,24 @@ function Home() {
         console.error("Failed to fetch pending requests:", err);
       }
     };
+    const fetchPendingMatch = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/match-requests", {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
 
+        const pending = res.data.pendingMatch || [];
+        setMatchCount(pending.length);
+      } catch (err) {
+        console.error("Failed to fetch pending requests:", err);
+      }
+    };
     if (user) {
       fetchPendingRequests();
+      fetchPendingMatch();
     }
   }, [user]);
   
@@ -208,9 +224,9 @@ function Home() {
             <span className="text-sm sm:text-base md:text-lg">List Friends</span>
 
             {/* Notification Dot */}
-            {pendingCount > 0 && (
-              <span className="absolute top-1 right-1 sm:top-2 sm:right-2 inline-block w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full"></span>
-            )}
+            {(pendingCount > 0 || matchCount > 0) && (
+  <span className="absolute top-1 right-1 sm:top-2 sm:right-2 inline-block w-2 h-2 sm:w-3 sm:h-3 bg-red-500 rounded-full"></span>
+)}
           </Link>
         </div>
       </main>
