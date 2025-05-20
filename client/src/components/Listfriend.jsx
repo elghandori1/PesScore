@@ -7,14 +7,14 @@ function Listfriend() {
     const [activeTab, setActiveTab] = useState("users");
     const [friends, setFriends] = useState([]);
     const [pendingRequests, setPendingRequests] = useState([]);
+    const [matchCount, setMatchCount] = useState(0);
     const [searchQuery, setSearchQuery] = useState("");
     const [alert, setAlert] = useState({ message: '', type: '' });
     const navigate = useNavigate();
-    
+
     const tabs = [
-        { id: "users", label: "List Users" },
-        { id: "pending", label: "Pending Requests" },
-        { id: "notifications", label: "Notifications" },
+        { id: "users", label: "List Friends" },
+        { id: "pending", label: "Pending Friends" },
     ];
 
     const handleApiError = (err) => {
@@ -32,19 +32,20 @@ function Listfriend() {
     useEffect(() => {
         const fetchInitialData = async () => {
             try {
-                // Fetch both friends and pending requests when component mounts
-                const [friendsRes, pendingRes] = await Promise.all([
+                const [friendsRes, pendingRes, matchRes] = await Promise.all([
                     axios.get("http://localhost:5000/friends", { withCredentials: true }),
-                    axios.get("http://localhost:5000/friend-requests", { withCredentials: true })
+                    axios.get("http://localhost:5000/friend-requests", { withCredentials: true }),
+                    axios.get("http://localhost:5000/match-requests", { withCredentials: true })
                 ]);
-                
+
                 setFriends(friendsRes.data.friends);
                 setPendingRequests(pendingRes.data.pendingRequests);
+                setMatchCount(matchRes.data.pendingMatch.length); // Save match count
             } catch (err) {
                 handleApiError(err);
             }
         };
-    
+
         const fetchTabData = async () => {
             try {
                 if (activeTab === "users") {
@@ -62,15 +63,13 @@ function Listfriend() {
                 handleApiError(err);
             }
         };
-    
-        // On initial load, fetch all data
+
         if (friends.length === 0 && pendingRequests.length === 0) {
             fetchInitialData();
         } else {
             fetchTabData();
         }
     }, [activeTab, navigate]);
-    
     useEffect(() => {
         return () => {
             setPendingRequests([]);
@@ -96,7 +95,7 @@ function Listfriend() {
                 axios.get("http://localhost:5000/friends", { withCredentials: true }),
                 axios.get("http://localhost:5000/friend-requests", { withCredentials: true })
             ]);
-            
+
             setFriends(friendsRes.data.friends);
             setPendingRequests(pendingRes.data.pendingRequests);
         } catch (err) {
@@ -114,7 +113,7 @@ function Listfriend() {
             setFriends(prev => prev.filter(f => f.id !== friendId));
             setAlert({
                 message: 'Friend removed successfully',
-                type: 'success'
+                type: 'error'
             });
             setTimeout(() => setAlert({ message: '', type: '' }), 3000);
         } catch (err) {
@@ -132,7 +131,7 @@ function Listfriend() {
             setPendingRequests(prev => prev.filter(r => r.id !== requesterId));
             setAlert({
                 message: 'Friend request rejected',
-                type: 'success'
+                type: 'error'
             });
             setTimeout(() => setAlert({ message: '', type: '' }), 3000);
         } catch (err) {
@@ -159,8 +158,8 @@ function Listfriend() {
             {alert.message && (
                 <div
                     className={`fixed top-5 left-1/2 transform -translate-x-1/2 max-w-[400px] min-w-[250px] px-6 py-4 rounded font-bold text-center z-[1000] transition-opacity duration-300 border-l-4 shadow-lg ${alert.type === "success"
-                            ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
-                            : "bg-red-100 text-red-800 border-red-600"
+                        ? "bg-[#e8f5e9] text-[#2e7d32] border-[#2e7d32]"
+                        : "bg-red-100 text-red-800 border-red-600"
                         }`}
                 >
                     {alert.message}
@@ -184,14 +183,17 @@ function Listfriend() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 py-3 xs:py-2 text-xs xs:text-sm font-medium cursor-pointer transition-all ${activeTab === tab.id
-                                    ? "text-white bg-gradient-to-r from-blue-700 to-blue-600 sm:from-blue-800 sm:to-blue-700"
-                                    : "text-gray-700 bg-white hover:bg-gray-50"
+                                        ? "text-white bg-gradient-to-r from-blue-700 to-blue-600 sm:from-blue-800 sm:to-blue-700"
+                                        : "text-gray-700 bg-white hover:bg-gray-50"
                                     }`}
                             >
                                 {tab.label}
-                                {/* Notification dot for Pending Requests */}
+                                {/* Notification dot */}
+                                {(tab.id === "users" && (matchCount > 0)) && (
+                                    <span className="ml-1 inline-block w-2 h-2 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
+                                )}
                                 {tab.id === "pending" && pendingRequests.length > 0 && (
-                                    <span className="ml-0.5 sm:top-2 sm:right-2 inline-block w-1.5 h-1.5 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
+                                    <span className="ml-1 inline-block w-2 h-2 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
                                 )}
                             </li>
                         ))}
@@ -268,7 +270,7 @@ function Listfriend() {
                                                     className="px-2.5 my-2.5 xs:px-3 py-1.5 flex items-center justify-between bg-gray-100 hover:bg-gray-200 rounded sm:rounded-md shadow-sm transition"
                                                 >
                                                     <div className="truncate pr-2">
-                                                        <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name}</p>
+                                                        <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name} </p>
                                                         <p className="text-xs sm:text-sm text-gray-500 truncate">@{friend.account_name}</p>
                                                     </div>
                                                     <button
@@ -349,10 +351,6 @@ function Listfriend() {
                                     </>
                                 )}
                             </div>
-                        )}
-
-                        {activeTab === "notifications" && (
-                            <p className="text-gray-500 py-2 text-sm sm:text-base">No notifications yet.</p>
                         )}
                     </div>
                 </section>
