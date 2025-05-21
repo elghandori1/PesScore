@@ -293,37 +293,23 @@ function Listfriend() {
                                                     className="px-2.5 my-2.5 xs:px-3 py-1.5 flex items-center justify-between bg-gray-100 hover:bg-gray-200 rounded sm:rounded-md shadow-sm transition"
                                                 >
                                                     <div className="truncate pr-2">
-                                                        <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name} </p>
+                                                        <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name} 
+                                                        {friend.hasPendingMatch && (
+                                                            <span className="ml-1 inline-block w-2 h-2 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
+                                                        )}
+                                                        </p>
+                                                        
                                                         <p className="text-xs sm:text-sm text-gray-500 truncate">@{friend.account_name}</p>
                                                     </div>
-                                                    {friend.isRemovalRequestedByMe ? (
-                                                        <div className="text-red-600 text-xs">Request Sent</div>
-                                                    ) : friend.hasPendingRemovalRequest ? (
-                                                        <div className="flex gap-2">
-                                                            <button
-                                                                onClick={() => handleAcceptRemove(friend.id)}
-                                                                className="px-2 py-1 bg-green-500 text-white rounded text-xs"
-                                                            >
-                                                                Accept
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleRejectRemove(friend.id)}
-                                                                className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
-                                                            >
-                                                                Reject
-                                                            </button>
-                                                        </div>
-                                                    ) : (
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                requestRemoveFriend(friend.id);
-                                                            }}
-                                                            className="text-red-500 font-bold px-2 py-0.5 rounded hover:text-red-700 hover:bg-red-50 transition text-xs xs:text-sm"
-                                                        >
-                                                            Cancel Friendship
-                                                        </button>
-                                                    )}
+                                                    <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        removeFriend(friend.id);
+                                                    }}
+                                                    className="text-red-500 font-bold px-2 py-0.5 rounded hover:text-red-700 hover:bg-red-50 transition text-xs xs:text-sm"
+                                                >
+                                                    Remove
+                                                </button>
                                                 </Link>
                                             ))
                                         )
