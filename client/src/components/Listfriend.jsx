@@ -38,9 +38,36 @@ function Listfriend() {
                     axios.get("http://localhost:5000/match-requests", { withCredentials: true })
                 ]);
 
-                setFriends(friendsRes.data.friends);
+                // Extract current user ID (you can get it from auth or session)
+                const currentUserRes = await axios.get("http://localhost:5000/auth", {
+                    withCredentials: true,
+                });
+                const currentUserId = currentUserRes.data.user?.id;
+
+                // Map which friends have sent pending matches
+                const pendingMatches = matchRes.data.pendingMatch || [];
+                const friendHasPendingMatch = {};
+
+                pendingMatches.forEach(match => {
+                    const opponentId =
+                        match.user1_id === currentUserId ? match.user2_id : match.user1_id;
+
+                    // Only mark as dot if this is a match between current user and the friend
+                    if (opponentId) {
+                        friendHasPendingMatch[opponentId] = true;
+                    }
+                });
+
+                // Add hasPendingMatch flag to each friend
+                const friendsWithDot = friendsRes.data.friends.map(friend => ({
+                    ...friend,
+                    hasPendingMatch: !!friendHasPendingMatch[friend.id]
+                }));
+
+                setFriends(friendsWithDot);
                 setPendingRequests(pendingRes.data.pendingRequests);
-                setMatchCount(matchRes.data.pendingMatch.length); // Save match count
+                setMatchCount(pendingMatches.length);
+
             } catch (err) {
                 handleApiError(err);
             }
@@ -52,7 +79,7 @@ function Listfriend() {
                     const res = await axios.get("http://localhost:5000/friends", {
                         withCredentials: true,
                     });
-                    setFriends(res.data.friends);
+                    setFriends(res.data.friends.map(f => ({ ...f, hasPendingMatch: false })));
                 } else if (activeTab === "pending") {
                     const res = await axios.get("http://localhost:5000/friend-requests", {
                         withCredentials: true,
@@ -68,13 +95,9 @@ function Listfriend() {
             fetchInitialData();
         } else {
             fetchTabData();
+            fetchInitialData();
         }
     }, [activeTab, navigate]);
-    useEffect(() => {
-        return () => {
-            setPendingRequests([]);
-        };
-    }, []);
 
     const acceptFriend = async (id) => {
         try {
@@ -183,8 +206,8 @@ function Listfriend() {
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`flex-1 py-3 xs:py-2 text-xs xs:text-sm font-medium cursor-pointer transition-all ${activeTab === tab.id
-                                        ? "text-white bg-gradient-to-r from-blue-700 to-blue-600 sm:from-blue-800 sm:to-blue-700"
-                                        : "text-gray-700 bg-white hover:bg-gray-50"
+                                    ? "text-white bg-gradient-to-r from-blue-700 to-blue-600 sm:from-blue-800 sm:to-blue-700"
+                                    : "text-gray-700 bg-white hover:bg-gray-50"
                                     }`}
                             >
                                 {tab.label}
@@ -273,15 +296,34 @@ function Listfriend() {
                                                         <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name} </p>
                                                         <p className="text-xs sm:text-sm text-gray-500 truncate">@{friend.account_name}</p>
                                                     </div>
-                                                    <button
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            removeFriend(friend.id);
-                                                        }}
-                                                        className="text-red-500 font-bold px-2 py-0.5 rounded hover:text-red-700 hover:bg-red-50 transition text-xs xs:text-sm"
-                                                    >
-                                                        Remove
-                                                    </button>
+                                                    {friend.isRemovalRequestedByMe ? (
+                                                        <div className="text-red-600 text-xs">Request Sent</div>
+                                                    ) : friend.hasPendingRemovalRequest ? (
+                                                        <div className="flex gap-2">
+                                                            <button
+                                                                onClick={() => handleAcceptRemove(friend.id)}
+                                                                className="px-2 py-1 bg-green-500 text-white rounded text-xs"
+                                                            >
+                                                                Accept
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleRejectRemove(friend.id)}
+                                                                className="px-2 py-1 bg-gray-500 text-white rounded text-xs"
+                                                            >
+                                                                Reject
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                requestRemoveFriend(friend.id);
+                                                            }}
+                                                            className="text-red-500 font-bold px-2 py-0.5 rounded hover:text-red-700 hover:bg-red-50 transition text-xs xs:text-sm"
+                                                        >
+                                                            Cancel Friendship
+                                                        </button>
+                                                    )}
                                                 </Link>
                                             ))
                                         )
@@ -295,7 +337,12 @@ function Listfriend() {
                                                 className="px-2.5 my-2.5 xs:px-3 py-1.5 flex items-center justify-between bg-gray-100 hover:bg-gray-200 rounded sm:rounded-md shadow-sm transition"
                                             >
                                                 <div className="truncate pr-2">
-                                                    <p className="font-medium sm:font-semibold text-sm sm:text-base truncate">{friend.name}</p>
+                                                    <p className="font-medium sm:font-semibold text-sm sm:text-base truncate relative">
+                                                        {friend.name}
+                                                        {friend.hasPendingMatch && (
+                                                            <span className="ml-1 inline-block w-2 h-2 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
+                                                        )}
+                                                    </p>
                                                     <p className="text-xs sm:text-sm text-gray-500 truncate">@{friend.account_name}</p>
                                                 </div>
                                                 <button
