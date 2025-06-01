@@ -19,7 +19,7 @@ router.get('/matches-score/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (friendship.length === 0) {
-      return res.status(404).json({ error: 'Friend not found or not accepted' });
+      return res.status(404).json({ error: 'الصديق غير موجود أو لم يُقبل' });
     }
 
     // Fetch match history
@@ -68,13 +68,13 @@ router.post('/create-match', ensureAuthenticated, async (req, res) => {
     const userId = req.session.userId;
 
     if (!friendId || userScore === undefined || friendScore === undefined) {
-      return res.status(400).json({ error: 'Friend ID, user score, and friend score are required' });
+      return res.status(400).json({ error: 'معرّف الصديق ونقاط المستخدم ونقاط الصديق مطلوبة' });
     }
 
     // Validate scores
     if (!Number.isInteger(Number(userScore)) || !Number.isInteger(Number(friendScore)) ||
         userScore < 0 || friendScore < 0 || userScore > 20 || friendScore > 20) {
-      return res.status(400).json({ error: 'Scores must be integers between 0 and 20' });
+      return res.status(400).json({ error: 'يجب أن تكون النقاط أرقامًا صحيحة من 0 إلى 20' });
     }
 
     // Verify friendship
@@ -86,7 +86,7 @@ router.post('/create-match', ensureAuthenticated, async (req, res) => {
     );
 
     if (friendship.length === 0) {
-      return res.status(404).json({ error: 'Friend not found or not accepted' });
+      return res.status(404).json({ error: 'لم يتم العثور على الصديق أو لم يتم قبوله' });
     }
 
     // Determine winner (null for draws)
@@ -96,7 +96,6 @@ router.post('/create-match', ensureAuthenticated, async (req, res) => {
     } else if (friendScore > userScore) {
       winnerId = friendId;
     }
-    // If scores are equal, winnerId remains null
 
     // Insert match (handles draws correctly now)
     const [result] = await pool.query(
@@ -105,7 +104,7 @@ router.post('/create-match', ensureAuthenticated, async (req, res) => {
       [userId, friendId, userScore, friendScore, winnerId, userId]
     );
 
-    res.status(201).json({ message: 'Match created successfully', matchId: result.insertId });
+    res.status(201).json({ message: 'تم إنشاء المباراة بنجاح', matchId: result.insertId });
   } catch (err) {
     console.error('Create match error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -125,7 +124,7 @@ router.post('/accept-match/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found or already processed' });
+      return res.status(404).json({ error: 'المباراة غير موجودة أو تمت معالجتها مسبقاً' });
     }
 
     // Update match status
@@ -134,7 +133,7 @@ router.post('/accept-match/:id', ensureAuthenticated, async (req, res) => {
       [matchId]
     );
 
-    res.json({ message: 'Match accepted successfully' });
+    res.json({ message: 'تم قبول المباراة بنجاح' });
   } catch (err) {
     console.error('Accept match error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -163,7 +162,7 @@ router.post('/reject-match/:id', ensureAuthenticated, async (req, res) => {
       [matchId]
     );
 
-    res.json({ message: 'Match rejected successfully' });
+    res.json({ message: 'تم رفض المباراة بنجاح' });
   } catch (err) {
     console.error('Reject match error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -197,7 +196,7 @@ router.post('/resend-match/:id', ensureAuthenticated, async (req, res) => {
     // Delete the old rejected match
     await pool.query('DELETE FROM matches WHERE id = ?', [matchId]);
 
-    res.json({ message: 'Match resent successfully' });
+    res.json({ message: 'تمت إعادة إرسال المباراة بنجاح' });
   } catch (err) {
     console.error('Resend match error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -220,13 +219,13 @@ router.delete('/cancel-match/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found or cannot be canceled' });
+      return res.status(404).json({ error: 'المباراة غير موجودة أو لا يمكن إلغاؤها' });
     }
 
     // Delete the match
     await pool.query('DELETE FROM matches WHERE id = ?', [matchId]);
 
-    res.json({ message: 'Match canceled successfully' });
+    res.json({ message: 'تم إلغاء المباراة بنجاح' });
   } catch (err) {
     console.error('Cancel match error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -248,7 +247,7 @@ router.post('/request-delete/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found or cannot be deleted' });
+      return res.status(404).json({ error: 'المباراة غير موجودة أو لا يمكن حذفها' });
     }
 
     // Check if there's already a deletion request from the other player
@@ -261,7 +260,7 @@ router.post('/request-delete/:id', ensureAuthenticated, async (req, res) => {
     if (existingRequest.length > 0) {
       // If other player already requested deletion, delete the match immediately
       await pool.query('DELETE FROM matches WHERE id = ?', [matchId]);
-      return res.json({ message: 'Match deleted successfully', deleted: true });
+      return res.json({ message: 'تم حذف المباراة بنجاح', deleted: true });
     }
 
     // Check if active deletion request already exists from this user
@@ -272,7 +271,7 @@ router.post('/request-delete/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (myRequest.length > 0) {
-      return res.status(400).json({ error: 'Deletion request already pending' });
+      return res.status(400).json({ error: 'هناك طلب حذف قيد الانتظار بالفعل' });
     }
 
     // Delete any previous rejected requests for this match by this user
@@ -289,7 +288,7 @@ router.post('/request-delete/:id', ensureAuthenticated, async (req, res) => {
       [matchId, userId]
     );
 
-    res.json({ message: 'Match deletion requested successfully', deleted: false });
+    res.json({ message: 'تم طلب حذف المباراة بنجاح', deleted: false });
   } catch (err) {
     console.error('Request match deletion error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -309,7 +308,7 @@ router.post('/cancel-delete/:id', ensureAuthenticated, async (req, res) => {
       [matchId, userId]
     );
 
-    res.json({ message: 'Deletion request cancelled successfully' });
+    res.json({ message: 'تم إلغاء طلب الحذف بنجاح' });
   } catch (err) {
     console.error('Cancel deletion request error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -331,7 +330,7 @@ router.post('/respond-delete/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found' });
+      return res.status(404).json({ error: 'لم يتم العثور على المباراة' });
     }
 
     if (accept) {
@@ -347,7 +346,10 @@ router.post('/respond-delete/:id', ensureAuthenticated, async (req, res) => {
       );
     }
 
-    res.json({ message: `Deletion request ${accept ? 'accepted' : 'rejected'} successfully` });
+    const message = accept
+    ? "تم قبول طلب الحذف بنجاح" // Deletion request accepted successfully
+    : "تم رفض طلب الحذف بنجاح";   // Deletion request rejected successfully
+  res.json({ message: message });
   } catch (err) {
     console.error('Respond to deletion request error:', err);
     res.status(500).json({ error: 'Internal server error' });
