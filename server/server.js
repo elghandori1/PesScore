@@ -8,6 +8,7 @@ const authRoutes = require('./routes/auth');
 const friendsRoutes = require('./routes/friends');
 const profileRoutes = require('./routes/profile')
 const matchesRoutes = require('./routes/matches');
+const adminPesScoreRoutes = require('./routes/adminPesScore');
 const app = express();
 
 // Session store configuration
@@ -39,6 +40,7 @@ app.use('/connection', connectRoutes);
 app.use('/friends', friendsRoutes);
 app.use('/profile',profileRoutes);
 app.use('/matches',matchesRoutes);
+app.use('/admin-pesScore', adminPesScoreRoutes);
 
 // Start server
 const PORT = process.env.PORT || 5000;
