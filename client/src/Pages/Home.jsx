@@ -122,7 +122,7 @@ function Home() {
         }}
       />
       <header className="w-full flex justify-between items-center px-2 xs:px-3 sm:px-4 md:px-5 py-2 xs:py-3 sm:py-4 text-white fixed z-10 bg-black/60">
-        <h2 className="text-lg xs:text-xl sm:text-2xl font-bold">PesScore</h2>
+        <h1 className="text-lg xs:text-xl sm:text-2xl font-bold">PesScore</h1>
 
         {user ? (
           <div className="flex gap-1 xs:gap-1.5 sm:gap-2 justify-between items-center">
@@ -170,9 +170,9 @@ function Home() {
         ) : (
           <Link
             to="/login"
-            className="bg-white/20 hover:bg-white/40 text-white font-semibold px-2 py-1 xs:px-3 xs:py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs xs:text-sm sm:text-base"
+            className="bg-white/20 hover:bg-white/40 text-white leading-relaxed font-almarai font-semibold px-2 py-1 xs:px-3 xs:py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs xs:text-sm sm:text-base"
           >
-            Sign In
+            تسجيل الدخول
           </Link>
         )}
       </header>
@@ -183,13 +183,11 @@ function Home() {
           <>
             {/* Description Section */}
             <section className="bg-white/90 mt-3 xs:mt-4 sm:mt-6 p-3 xs:p-4 sm:p-6 md:p-8 rounded-lg xs:rounded-xl shadow-lg text-center w-full max-w-xl mx-auto backdrop-blur-sm">
-              <h2 className="text-lg xs:text-xl sm:text-2xl mb-2 xs:mb-3 sm:mb-4 text-blue-700 font-semibold">
-                Description
+              <h2 className="text-lg xs:text-xl sm:text-2xl mb-2 text-blue-700 font-semibold">
+                PesScore
               </h2>
-              <p className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed">
-                PesScore is a mobile-friendly web app designed to track and
-                display the results and history of football matches between
-                friends.
+              <p className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed font-almarai">
+                هو تطبيق ويب متوافق مع الجوّال مصمم لتتبع وعرض نتائج مباريات كرة القدم بين الأصدقاء.
               </p>
             </section>
             {/* Action Buttons */}
@@ -212,8 +210,8 @@ function Home() {
                     d="M12 6v6m0 0v6m0-6h6m-6 0H6"
                   />
                 </svg>
-                <span className="text-xs xs:text-sm sm:text-base md:text-lg">
-                  Add Friend
+                <span className="text-xs xs:text-sm sm:text-base md:text-lg font-almarai">
+                  إضافة صديق
                 </span>
               </Link>
               <Link
@@ -237,8 +235,8 @@ function Home() {
                     d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
                   />
                 </svg>
-                <span className="text-xs xs:text-sm sm:text-base md:text-lg">
-                  List Friends
+                <span className="text-xs xs:text-sm sm:text-base md:text-lg font-almarai">
+                  قائمة الأصدقاء
                 </span>
               </Link>
             </div>
@@ -260,16 +258,16 @@ function Home() {
 
             {/* Content */}
             <div className="relative z-10">
-              <h2 className="text-xl xs:text-2xl sm:text-3xl mb-3 xs:mb-4 sm:mb-5 text-white font-bold drop-shadow-md">
+              <h2 className="text-xl xs:text-2xl sm:text-3xl mb-3 xs:mb-4 sm:mb-5 text-white font-bold drop-shadow-md font-almarai" dir="rtl">
                 <span className="inline-block transform transition hover:scale-105">
-                  Description
+                  وصف
                 </span>
               </h2>
-              <p className="text-gray-100 text-sm xs:text-base sm:text-lg leading-relaxed font-medium">
-                PesScore is a{" "}
-                <span className="text-yellow-300 font-bold">mobile-friendly</span>{" "}
-                web app designed to track and display football match results
-                between <span className="text-green-300 font-bold">friends</span>.
+              <p className="text-gray-100 text-sm xs:text-base sm:text-lg leading-relaxed font-medium font-almarai" dir="rtl">
+                <span dir="ltr">PesScore</span> هو{" "}
+                <span className="text-yellow-300 font-bold">تطبيق ويب</span>{" "}
+                متوافق مع الجوّال مصمم لتتبع وعرض نتائج مباريات كرة القدم
+                بين <span className="text-green-300 font-bold">الأصدقاء</span>.
               </p>
 
               {/* Football/soccer ball icon */}
@@ -287,15 +285,15 @@ function Home() {
         )}
       </main>
       <footer className="fixed bottom-0 w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-2 text-xs xs:text-sm z-10 shadow-lg">
-        <div className="container mx-auto px-4 text-center">
-          <p className="mb-0.5 font-medium ">PesScore © {new Date().getFullYear()}</p>
+        <div className="container mx-auto px-4 text-center font-almarai">
+          <p className="mb-0.5 font-medium">PesScore © {new Date().getFullYear()}</p>
           <p className="text-gray-200">
-            Developed by Mohammed elghandori For any issues or suggestions, please{" "}
-            <Link 
-              to="/Developer" 
-              className="text-blue-200 underline hover:text-white transition-colors duration-200 font-semibold "
+            تم التطوير بواسطة <span dir="ltr">Mohammed elghandori</span>. للاقتراحات أو المشاكل،{" "}
+            <Link
+              to="/Developer"
+              className="text-blue-200 underline hover:text-white transition-colors duration-200 font-semibold"
             >
-              contact me
+              تواصل معي
             </Link>
           </p>
         </div>

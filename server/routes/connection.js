@@ -10,20 +10,20 @@ router.post('/register', async (req, res) => {
 
     // Validation
     if (!name_account || !id_account || !email || !password) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: 'يجب ملء جميع الحقول' });
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return res.status(400).json({ error: "Invalid email format" });
+      return res.status(400).json({ error: "صيغة البريد الإلكتروني غير صالحة" });
     }
 
     if (name_account.length < 3 || name_account.length > 16) {
-      return res.status(400).json({ error: 'Account Name must be between 3 and 16 characters' });
+      return res.status(400).json({ error: 'يجب أن يكون اسم الحساب من 3 إلى 16 حرفًا' });
     }
 
     if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+      return res.status(400).json({ error: 'يجب أن تكون كلمة المرور 8 أحرف على الأقل' });
     }
 
     // Check if user already exists by id_account
@@ -33,7 +33,7 @@ router.post('/register', async (req, res) => {
     );
 
     if (existingUser.length > 0) {
-      return res.status(400).json({ error: 'User already exists' });
+      return res.status(400).json({ error: 'اسم المستخدم موجود مسبقًا' });
     }
 
     // Check if email already exists
@@ -43,7 +43,7 @@ router.post('/register', async (req, res) => {
     );
 
     if (existingEmail.length > 0) {
-      return res.status(400).json({ error: 'The email is already used' });
+      return res.status(400).json({ error: 'عنوان البريد الإلكتروني مسجل مسبقًا' });
     }
 
     // Hash password
@@ -76,7 +76,7 @@ router.post('/login', async (req, res) => {
 
     // Validation
     if (!id_account || !password) {
-      return res.status(400).json({ error: 'All fields are required' });
+      return res.status(400).json({ error: 'يجب ملء جميع الحقول' });
     }
 
     // Find user
@@ -86,7 +86,7 @@ router.post('/login', async (req, res) => {
     );
 
     if (users.length === 0) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'بيانات الاعتماد غير صالحة' });
     }
 
     const user = users[0];
@@ -94,7 +94,7 @@ router.post('/login', async (req, res) => {
     // Compare passwords
     const passwordMatch = await bcrypt.compare(password, user.password_hash);
     if (!passwordMatch) {
-      return res.status(401).json({ error: 'Invalid credentials' });
+      return res.status(401).json({ error: 'بيانات الاعتماد غير صالحة' });
     }
 
     // Create session

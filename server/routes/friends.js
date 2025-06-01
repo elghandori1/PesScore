@@ -11,7 +11,7 @@ router.get('/search-users', ensureAuthenticated, async (req, res) => {
     const userId = req.session.userId;
 
     if (!query || query.trim() === '') {
-      return res.status(400).json({ error: 'Search query is required' });
+      return res.status(400).json({ error: 'يجب إدخال عبارة البحث' });
     }
 
     const [results] = await pool.query(
@@ -35,7 +35,7 @@ router.post('/send-friend-request', ensureAuthenticated, async (req, res) => {
     const sender_id = req.session.userId;
 
     if (!receiver_id) {
-      return res.status(400).json({ error: 'Receiver ID is required' });
+      return res.status(400).json({ error: 'معرّف المستلم مطلوب' });
     }
 
     if (sender_id === receiver_id) {
@@ -62,7 +62,7 @@ router.post('/send-friend-request', ensureAuthenticated, async (req, res) => {
         );
 
         await pool.query('COMMIT');
-        return res.status(200).json({ message: 'Friend request automatically accepted' });
+        return res.status(200).json({ message: 'تم قبول طلب الصداقة تلقائيًا' });
       } catch (err) {
         await pool.query('ROLLBACK');
         throw err;
@@ -72,7 +72,7 @@ router.post('/send-friend-request', ensureAuthenticated, async (req, res) => {
     // Continue with normal friend request logic
     const [receiver] = await pool.query('SELECT id FROM users WHERE id = ?', [receiver_id]);
     if (receiver.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: 'اسم المستخدم غير موجود' });
     }
 
     const [existingRequest] = await pool.query(
@@ -80,7 +80,7 @@ router.post('/send-friend-request', ensureAuthenticated, async (req, res) => {
       [sender_id, receiver_id, 'pending']
     );
     if (existingRequest.length > 0) {
-      return res.status(400).json({ error: 'Friend request already sent' });
+      return res.status(400).json({ error: 'طلب الصداقة مرسل مسبقاً' });
     }
 
     const [existingFriendship] = await pool.query(
@@ -96,7 +96,7 @@ router.post('/send-friend-request', ensureAuthenticated, async (req, res) => {
       [sender_id, receiver_id, 'pending']
     );
 
-    res.status(201).json({ message: 'Friend request sent successfully' });
+    res.status(201).json({ message: 'تم إرسال طلب الصداقة بنجاح' });
   } catch (err) {
     console.error('Friend request error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -156,7 +156,7 @@ router.delete('/cancel-friend-request/:id', ensureAuthenticated, async (req, res
 
     await pool.query('DELETE FROM friend_requests WHERE id = ?', [requestId]);
 
-    res.json({ message: 'Friend request cancelled successfully' });
+    res.json({ message: 'تم إلغاء طلب الصداقة بنجاح' });
   } catch (err) {
     console.error('Cancel friend request error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -193,7 +193,7 @@ router.post('/accept-friend-request/:id', ensureAuthenticated, async (req, res) 
     );
 
     if (request.length === 0) {
-      return res.status(404).json({ error: 'Friend request not found or not authorized' });
+      return res.status(404).json({ error: 'طلب الصداقة غير موجود أو غير مصرح لك' });
     }
 
     const senderId = request[0].sender_id;
@@ -210,7 +210,7 @@ router.post('/accept-friend-request/:id', ensureAuthenticated, async (req, res) 
 
       await pool.query('COMMIT');
 
-      res.json({ message: 'Friend request accepted successfully' });
+      res.json({ message: 'تم قبول طلب الصداقة بنجاح' });
     } catch (err) {
       await pool.query('ROLLBACK');
       throw err;
@@ -238,7 +238,7 @@ router.delete('/reject-friend-request/:id', ensureAuthenticated, async (req, res
 
     await pool.query('DELETE FROM friend_requests WHERE id = ?', [requestId]);
 
-    res.json({ message: 'Friend request rejected successfully' });
+    res.json({ message: 'تم رفض طلب الصداقة بنجاح' });
   } catch (err) {
     console.error('Reject friend request error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -265,14 +265,14 @@ router.post('/remove-friend/:friendId', ensureAuthenticated, async (req, res) =>
     }
 
     if (friendship[0].status === 'pending_removal') {
-      return res.status(400).json({ error: 'Friendship is already pending removal' });
+      return res.status(400).json({ error: 'الصداقة قيد الإزالة بالفعل' });
     }
 
     await pool.query(
       'UPDATE friendships SET status = ?, requested_by = ? WHERE id = ?',
       ['pending_removal', userId, friendship[0].id]
     );
-    res.json({ message: 'Friend removal request initiated successfully' });
+    res.json({ message: 'تم إرسال طلب إزالة الصداقة بنجاح' });
   } catch (err) {
     console.error('Remove friend error:', err);
     res.status(500).json({ error: 'Internal server error' });
@@ -291,7 +291,7 @@ router.post('/cancel-removal/:friendId', ensureAuthenticated, async (req, res) =
     );
 
     if (friendship.length === 0) {
-      return res.status(404).json({ error: 'Removal request not found or not authorized' });
+      return res.status(404).json({ error: 'طلب الصداقة غير موجود أو غير مصرح لك' });
     }
 
     await pool.query('START TRANSACTION');
@@ -305,7 +305,7 @@ router.post('/cancel-removal/:friendId', ensureAuthenticated, async (req, res) =
 
       await pool.query('COMMIT');
 
-      res.json({ message: 'Friend removal request cancelled successfully' });
+      res.json({ message: 'تم إلغاء طلب إزالة الصداقة بنجاح' });
     } catch (err) {
       await pool.query('ROLLBACK');
       throw err;
@@ -328,7 +328,7 @@ router.post('/accept-removal/:friendId', ensureAuthenticated, async (req, res) =
     );
 
     if (friendship.length === 0) {
-      return res.status(404).json({ error: 'Removal request not found or not authorized' });
+      return res.status(404).json({ error: 'طلب الصداقة غير موجود أو غير مصرح لك' });
     }
 
     await pool.query('START TRANSACTION');
@@ -345,7 +345,7 @@ router.post('/accept-removal/:friendId', ensureAuthenticated, async (req, res) =
 
       await pool.query('COMMIT');
 
-      res.json({ message: 'Friendship and related matches removed successfully' });
+      res.json({ message: 'تمت إزالة الصداقة والمباريات المتعلقة بها بنجاح' });
     } catch (err) {
       await pool.query('ROLLBACK');
       throw err;
@@ -368,7 +368,7 @@ router.post('/reject-removal/:friendId', ensureAuthenticated, async (req, res) =
     );
 
     if (friendship.length === 0) {
-      return res.status(404).json({ error: 'Removal request not found or not authorized' });
+      return res.status(404).json({ error: 'طلب الصداقة غير موجود أو غير مصرح لك' });
     }
 
     await pool.query('START TRANSACTION');

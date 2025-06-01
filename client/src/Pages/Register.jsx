@@ -74,7 +74,7 @@ function Register() {
     );
   }
   return (
-    <div className="relative min-h-screen bg-gray-100 overflow-hidden">
+    <div className="relative min-h-screen bg-gray-100 overflow-hidden font-almarai" dir="rtl">
       <div
         className="fixed inset-0 w-full h-full z-0"
         style={{
@@ -87,25 +87,25 @@ function Register() {
       />
       
       {/* Header */}
-      <header className="w-full flex justify-between items-center px-3 py-2 xs:px-4 sm:px-6 sm:py-4 text-white fixed z-30 bg-black/70 backdrop-blur-sm">
-        <h2 className="text-lg xs:text-xl sm:text-2xl font-bold tracking-tight">PesScore</h2>
-        <Link 
+      <header className="w-full flex flex-row justify-between items-center px-2 py-2 sm:px-4 sm:py-3 text-white fixed z-30 bg-black/70 backdrop-blur-sm">
+
+        <Link
           to="/"
-          className="bg-white/20 hover:bg-white/40 text-white font-semibold px-3 py-1.5 xs:px-4 xs:py-2 rounded-full transition text-xs xs:text-sm sm:text-base flex items-center gap-1"
+          className="font-almarai bg-white/20 hover:bg-white/40 text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs sm:text-sm md:text-base flex items-center gap-1"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 xs:h-4 xs:w-4" viewBox="0 0 20 20" fill="currentColor">
+          العودة إلى الرئيسية
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
             <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
           </svg>
-          Back to Home
         </Link>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold tracking-tight">PesScore</h2>
       </header>
     
       {/* Main Content */}
-      <main className="relative z-10 flex flex-col items-center justify-center min-h-screen py-12 xs:py-16 px-3 xs:px-4 sm:px-6 md:px-8">
+      <main className="relative z-10 flex flex-col items-center min-h-screen py-12 xs:py-16 px-3 xs:px-4 sm:px-6 md:px-8">
         <section className="bg-white p-3 xs:p-4 sm:p-6 md:p-8 rounded-lg shadow-xl w-full max-w-[340px] xs:max-w-md mx-auto">
           <div className="text-center mb-3 xs:mb-4">
-            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-blue-700 mb-0.5 xs:mb-1">Create Account</h2>
-            <p className="text-gray-600 text-xs xs:text-sm">Join our football match tracker community</p>
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-blue-700 mb-0.5 xs:mb-1">إنشاء حساب</h2>
           </div>
           
           {error && (
@@ -113,8 +113,8 @@ function Register() {
               <span>{error}</span>
               <button
                 type="button"
-                className="ml-2 text-red-400 hover:text-red-700 font-bold rounded-full px-2 py-0.5 focus:outline-none"
-                aria-label="Close error"
+                className="mr-2 text-red-400 hover:text-red-700 font-bold rounded-full px-2 py-0.5 focus:outline-none"
+                aria-label="إغلاق الخطأ"
                 onClick={handleCloseError}
               >
                 ×
@@ -128,13 +128,13 @@ function Register() {
                 htmlFor="name_account"
                 className="block mb-1.5 xs:mb-2 font-medium text-gray-700 text-xs xs:text-sm"
               >
-                Account Name
+                اسم الحساب
               </label>
               <input
                 type="text"
                 id="name_account"
                 name="name_account"
-                placeholder="Enter your account name"
+                placeholder="أدخل اسم حسابك"
                 value={name_account}
                 onChange={(e) => setNameAccount(e.target.value)}
                 required
@@ -147,13 +147,13 @@ function Register() {
                 htmlFor="id_account"
                 className="block mb-1.5 xs:mb-2 font-medium text-gray-700 text-xs xs:text-sm"
               >
-                Game ID
+                  معرف اللعبة ID
               </label>
               <input
                 type="text"
                 id="id_account"
                 name="id_account"
-                placeholder="Enter your game ID"
+                placeholder="أدخل معرف اللعبة الخاص بك"
                 value={id_account}
                 onChange={(e) => setIdAccount(e.target.value)}
                 required
@@ -166,13 +166,13 @@ function Register() {
                 htmlFor="email"
                 className="block mb-1.5 xs:mb-2 font-medium text-gray-700 text-xs xs:text-sm"
               >
-                Email
+                البريد الإلكتروني
               </label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                placeholder="Enter your email"
+                placeholder="أدخل بريدك الإلكتروني"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -185,13 +185,13 @@ function Register() {
                 htmlFor="password"
                 className="block mb-1.5 xs:mb-2 font-medium text-gray-700 text-xs xs:text-sm"
               >
-                Password
+                كلمة المرور
               </label>
               <input
                 type="password"
                 id="password"
                 name="password"
-                placeholder="Enter your password (min 8 characters)"
+                placeholder="أدخل كلمة المرور (8 أحرف على الأقل)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 minLength="8"
@@ -205,13 +205,13 @@ function Register() {
                 htmlFor="confirmPassword"
                 className="block mb-1.5 xs:mb-2 font-medium text-gray-700 text-xs xs:text-sm"
               >
-                Confirm Password
+                تأكيد كلمة المرور
               </label>
               <input
                 type="password"
                 id="confirmPassword"
                 name="confirmPassword"
-                placeholder="Confirm your password"
+                placeholder="تأكيد كلمة المرور"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
@@ -223,36 +223,37 @@ function Register() {
               type="submit"
               className="w-full bg-gradient-to-r from-blue-700 to-blue-500 text-white font-semibold px-4 py-2 xs:py-2.5 sm:py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:from-blue-800 hover:to-blue-600 text-xs xs:text-sm sm:text-base"
             >
-              Register
+              تسجيل
             </button>
           </form>
           
-          <div className="mt-4 xs:mt-6 text-center text-xs xs:text-sm text-gray-600">
-            Already have an account?{' '}
+          <div className="mt-2 xs:mt-4 text-center text-xs xs:text-sm text-gray-600">
+            لديك حساب بالفعل؟{' '}
             <Link 
               to="/login" 
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline transition"
             >
-              Sign In
+              تسجيل الدخول
             </Link>
           </div>
         </section>
       </main>
     
       {/* Footer */}
-     <footer className="fixed bottom-0 w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-2 text-xs xs:text-sm z-10 shadow-lg">
-        <div className="container mx-auto px-4 text-center">
-          <p className="text-gray-200">
-            Developed by Mohammed elghandori For any issues or suggestions, please{" "}
-            <Link 
-              to="/Developer" 
-              className="text-blue-200 underline hover:text-white transition-colors duration-200 font-semibold "
-            >
-              contact me
-            </Link>
-          </p>
-        </div>
-      </footer>
+          <footer className="fixed bottom-0 w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-2 text-xs xs:text-sm z-10 shadow-lg">
+             <div className="container mx-auto px-4 text-center font-almarai">
+               <p className="mb-0.5 font-medium">PesScore © {new Date().getFullYear()}</p>
+               <p className="text-gray-200">
+                 تم التطوير بواسطة <span dir="ltr">Mohammed elghandori</span>. للاقتراحات أو المشاكل،{" "}
+                 <Link
+                   to="/Developer"
+                   className="text-blue-200 underline hover:text-white transition-colors duration-200 font-semibold"
+                 >
+                   تواصل معي
+                 </Link>
+               </p>
+             </div>
+           </footer>
     </div>
   );
 }
