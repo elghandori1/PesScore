@@ -9,6 +9,9 @@ import NewFriend from "./Pages/NewFreind.jsx";
 import Listfriend from "./Pages/Listfriend.jsx";
 import Detailsfriend from "./Pages/Detailsfriend.jsx";
 import NewMatch from "./Pages/NewMatch.jsx";
+import Admin from "./admin/Admin.jsx";
+import Adminlog from "./admin/Adminlog.jsx";
+import AdminRegister from "./admin/AdminRegister.jsx";
 
 const PreventLoggedInAccess = () => {
   const [user, setUser] = useState(null);
@@ -110,6 +113,11 @@ export default function App() {
 
         {/* Public Routes */}
         <Route path="/" element={<Home />} />
+        <Route path="/admin-pesScore/login" element={<Adminlog />} />
+        <Route path="/admin-pesScore/register" element={<AdminRegister />} />
+  
+        <Route path="/admin-pesScore" element={<Admin />} />
+        <Route path="/admin-pesScore/users" element={<Admin />} />
       </Routes>
     </BrowserRouter>
   );
