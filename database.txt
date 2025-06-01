@@ -73,12 +73,12 @@ CREATE TABLE match_deletion_requests (
 -- Admins table
 CREATE TABLE admins (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    name VARCHAR(255) NOT NULL,
     role ENUM('admin', 'superadmin') DEFAULT 'admin' NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    admin_password VARCHAR(255) NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    revoked_at DATETIME,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (user_id)
+    revoked_at DATETIME
 );
 
 -- Notifications table
@@ -90,3 +90,11 @@ CREATE TABLE notifications (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE CASCADE
 );
+
+-- session table 
+CREATE TABLE `sessions` (
+  `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `expires` int unsigned NOT NULL,
+  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin,
+  PRIMARY KEY (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
