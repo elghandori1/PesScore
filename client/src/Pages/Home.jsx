@@ -286,9 +286,19 @@ function Home() {
           </section>
         )}
       </main>
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-blue-800 to-blue-700 text-white w-full text-center py-3 xs:py-4 mt-auto text-xs xs:text-sm backdrop-blur-sm">
-        PesScore © 2025 - Football Match Tracker
+      <footer className="fixed bottom-0 w-full bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-2 text-xs xs:text-sm z-10 shadow-lg">
+        <div className="container mx-auto px-4 text-center">
+          <p className="mb-0.5 font-medium ">PesScore © {new Date().getFullYear()}</p>
+          <p className="text-gray-200">
+            Developed by Mohammed elghandori For any issues or suggestions, please{" "}
+            <Link 
+              to="/Developer" 
+              className="text-blue-200 underline hover:text-white transition-colors duration-200 font-semibold "
+            >
+              contact me
+            </Link>
+          </p>
+        </div>
       </footer>
     </div>
   );
