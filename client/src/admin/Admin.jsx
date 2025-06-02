@@ -5,12 +5,9 @@ import axios from 'axios';
 function Admin() {
   const [users, setUsers] = useState([]);
   const [totalUsers, setTotalUsers] = useState(0);
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
   const [adminName, setAdminName] = useState('');
-  const [formError, setFormError] = useState('');
-  const [formSuccess, setFormSuccess] = useState('');
   const navigate = useNavigate();
 
   const fetchUsers = async () => {
@@ -22,7 +19,6 @@ function Admin() {
       setUsers(response.data.users);
       setTotalUsers(response.data.totalUsers);
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to fetch users');
       if (err.response?.status === 401) {
         navigate('/admin-pesScore/login');
       }
@@ -50,7 +46,7 @@ function Admin() {
       });
       navigate('/admin-pesScore/login');
     } catch (err) {
-      setError('Failed to log out');
+      console('Failed to log out',err);
     }
   };
 
@@ -65,7 +61,7 @@ function Admin() {
       });
       fetchUsers(); // Refresh the users list
     } catch (err) {
-      setError(err.response?.data?.error || 'Failed to delete user');
+      console(err.response?.data?.error || 'Failed to delete user');
     }
   };
 
