@@ -26,17 +26,20 @@ const ensureAdminAuthenticated = async (req, res, next) => {
 
 // Admin registration route
 router.post('/register', async (req, res) => {
-  const { email, password } = req.body;
-  if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password are required' });
+  const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: 'Name, email, and password are required' });
   }
-  
+
   try {
+    // Check admin count
+    const [countResult] = await pool.query('SELECT COUNT(*) as count FROM admins WHERE revoked_at IS NULL');
+    if (countResult[0].count > 0) {
+      return res.status(400).json({ error: 'Only one admin account is allowed' });
+    }
+
     // Check if email already exists
-    const [existingAdmin] = await pool.query(
-      'SELECT id FROM admins WHERE email = ?',
-      [email]
-    );
+    const [existingAdmin] = await pool.query('SELECT id FROM admins WHERE email = ?', [email]);
     if (existingAdmin.length > 0) {
       return res.status(400).json({ error: 'Email already registered' });
     }
@@ -44,10 +47,10 @@ router.post('/register', async (req, res) => {
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert new admin with correct column name 'role' instead of 'role_id'
+    // Insert new admin
     const [result] = await pool.query(
-      'INSERT INTO admins (email, admin_password, role) VALUES (?, ?, ?)',
-      [email, hashedPassword, 'admin']
+      'INSERT INTO admins (name, email, admin_password, role) VALUES (?, ?, ?, ?)',
+      [name, email, hashedPassword, 'admin']
     );
 
     if (result.affectedRows === 1) {
@@ -65,7 +68,7 @@ router.post('/register', async (req, res) => {
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    return res.json({ error: 'Email and password are required' });
+    return res.status(400).json({ error: 'Email and password are required' });
   }
   try {
     // Fetch admin by email
@@ -74,7 +77,7 @@ router.post('/login', async (req, res) => {
       [email]
     );
     if (admins.length === 0) {
-      return res.json({ error: 'Invalid email' });
+      return res.status(401).json({ error: 'Invalid email' });
     }
 
     const admin = admins[0];
@@ -82,7 +85,7 @@ router.post('/login', async (req, res) => {
     // Verify password
     const isMatch = await bcrypt.compare(password, admin.admin_password);
     if (!isMatch) {
-      return res.json({ error: 'Invalid password' });
+      return res.status(401).json({ error: 'Invalid password' });
     }
 
     // Store admin ID in session
@@ -90,7 +93,7 @@ router.post('/login', async (req, res) => {
     res.json({ message: 'Admin login successful' });
   } catch (err) {
     console.error('Admin login error:', err);
-    res.json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -109,7 +112,7 @@ router.get('/users', ensureAdminAuthenticated, async (req, res) => {
     });
   } catch (err) {
     console.error('Fetch users error:', err);
-    res.json({ error: 'Internal server error' });
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -118,7 +121,7 @@ router.post('/logout', ensureAdminAuthenticated, (req, res) => {
   req.session.destroy(err => {
     if (err) {
       console.error('Logout error:', err);
-      return res.json({ error: 'Failed to log out' });
+      return res.status(500).json({ error: 'Failed to log out' });
     }
     res.json({ message: 'Admin logged out successfully' });
   });
@@ -127,10 +130,7 @@ router.post('/logout', ensureAdminAuthenticated, (req, res) => {
 // Delete user route
 router.delete('/users/:userId', ensureAdminAuthenticated, async (req, res) => {
   try {
-    const [result] = await pool.query(
-      'DELETE FROM users WHERE id = ?',
-      [req.params.userId]
-    );
+    const [result] = await pool.query('DELETE FROM users WHERE id = ?', [req.params.userId]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'User not found' });
@@ -146,10 +146,9 @@ router.delete('/users/:userId', ensureAdminAuthenticated, async (req, res) => {
 // Get admin profile
 router.get('/profile', ensureAdminAuthenticated, async (req, res) => {
   try {
-    const [admin] = await pool.query(
-      'SELECT id, email, name FROM admins WHERE id = ?',
-      [req.session.adminId]
-    );
+    const [admin] = await pool.query('SELECT id, name, email, role FROM admins WHERE id = ?', [
+      req.session.adminId,
+    ]);
     if (admin.length === 0) {
       return res.status(404).json({ error: 'Admin not found' });
     }
@@ -165,21 +164,17 @@ router.put('/update-email', ensureAdminAuthenticated, async (req, res) => {
   const { newEmail, password } = req.body;
   try {
     // Verify current password first
-    const [admin] = await pool.query(
-      'SELECT admin_password FROM admins WHERE id = ?',
-      [req.session.adminId]
-    );
-    
+    const [admin] = await pool.query('SELECT admin_password FROM admins WHERE id = ?', [
+      req.session.adminId,
+    ]);
+
     const isMatch = await bcrypt.compare(password, admin[0].admin_password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid password' });
     }
 
-    await pool.query(
-      'UPDATE admins SET email = ? WHERE id = ?',
-      [newEmail, req.session.adminId]
-    );
-    
+    await pool.query('UPDATE admins SET email = ? WHERE id = ?', [newEmail, req.session.adminId]);
+
     res.json({ message: 'Email updated successfully' });
   } catch (err) {
     console.error('Update email error:', err);
@@ -192,11 +187,10 @@ router.put('/update-password', ensureAdminAuthenticated, async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   try {
     // Verify current password
-    const [admin] = await pool.query(
-      'SELECT admin_password FROM admins WHERE id = ?',
-      [req.session.adminId]
-    );
-    
+    const [admin] = await pool.query('SELECT admin_password FROM admins WHERE id = ?', [
+      req.session.adminId,
+    ]);
+
     const isMatch = await bcrypt.compare(currentPassword, admin[0].admin_password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid current password' });
@@ -204,11 +198,11 @@ router.put('/update-password', ensureAdminAuthenticated, async (req, res) => {
 
     // Hash and update new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await pool.query(
-      'UPDATE admins SET admin_password = ? WHERE id = ?',
-      [hashedPassword, req.session.adminId]
-    );
-    
+    await pool.query('UPDATE admins SET admin_password = ? WHERE id = ?', [
+      hashedPassword,
+      req.session.adminId,
+    ]);
+
     res.json({ message: 'Password updated successfully' });
   } catch (err) {
     console.error('Update password error:', err);

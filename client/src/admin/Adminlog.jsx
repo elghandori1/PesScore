@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Adminlog() {
@@ -14,6 +14,7 @@ function Adminlog() {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setAlertMessage('');
 
     try {
       const response = await axios.post(
@@ -28,25 +29,6 @@ function Adminlog() {
       setError(err.response?.data?.error || 'Failed to log in');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleRegisterClick = async (e) => {
-    e.preventDefault();
-    try {
-      setError('');
-      setAlertMessage('');
-      
-      const response = await axios.get('http://localhost:5000/admin/check-count');
-      
-      if (response.data.count > 0) {
-        setAlertMessage('Error: Only one admin account is allowed. An admin already exists.');
-      } else {
-        navigate('/admin-pesScore/register');
-      }
-    } catch (err) {
-      console.error('Error checking admin count:', err);
-      setError('Failed to check admin status. Please try again.');
     }
   };
 
@@ -99,15 +81,10 @@ function Adminlog() {
             {loading ? 'Logging in...' : 'Log In'}
           </button>
         </form>
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <button
-            onClick={handleRegisterClick}
-            className="text-blue-600 hover:underline bg-transparent border-none cursor-pointer p-0"
-          >
-            Register
-          </button>
-        </p>
+   
+       <Link to="/admin-pesScore/register" className="block text-center mt-4 text-sm text-blue-600 hover:underline">
+          Register as Admin
+        </Link>
       </div>
     </div>
   );
