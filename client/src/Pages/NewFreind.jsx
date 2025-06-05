@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG5.png";
@@ -126,7 +126,7 @@ function NewFriend() {
           data: updateErr.response?.data,
           message: updateErr.message,
         });
-        setError("Failed to refresh pending requests");
+        setError("فشل تحديث الطلبات المعلقة. يُرجى المحاولة مرة أخرى");
       }
     } catch (err) {
       console.error("Send friend request error:", {
@@ -260,7 +260,7 @@ function NewFriend() {
             <div className="mb-3">
               <h3 className="text-base sm:text-lg text-center font-semibold text-blue-600 mb-2 font-almarai">نتائج البحث</h3>
               {users.length > 0 ? (
-                <div className="space-y-2 sm:space-y-3">
+                <div className="max-h-[230px] overflow-y-auto space-y-2">
                   {users.map((user) => (
                     <div key={user.id} className="flex flex-row justify-between items-start sm:items-center bg-white p-3 sm:p-4 rounded-lg shadow-sm border border-gray-100">
                       <div>
@@ -300,9 +300,10 @@ function NewFriend() {
             {pendingRequests.length > 0 ? (
               <div className="max-h-[330px] overflow-y-auto space-y-2">
                 {pendingRequests.map((request) => (
-                  <div key={request.id} className="flex justify-between items-start sm:items-center bg-red-100 p-3 sm:p-4 rounded-lg">
+                  <div key={request.id} className="flex justify-between items-center bg-red-100 p-3 sm:p-4 rounded-lg">
                     <div>
-                      <p className="font-medium text-sm sm:text-base font-almarai">{request.name_account}</p>
+                        <p className="font-medium text-sm sm:text-base font-almarai">{request.name_account}</p>
+                        <p className="text-xs sm:text-sm text-gray-500 font-almarai">ID: {request.id_account}</p>
                       <p className="text-xs sm:text-sm text-gray-600 font-almarai">تم الإرسال:  {new Date(request.created_at).toLocaleDateString()}</p>
                     </div>
                     <button

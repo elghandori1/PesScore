@@ -41,7 +41,7 @@ function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      setError('Passwords do not match!');
+      setError('كلمة السر غير متطابقة');
       return;
     }
     setError('');
@@ -154,6 +154,7 @@ function Register() {
                 id="id_account"
                 name="id_account"
                 placeholder="أدخل معرف اللعبة الخاص بك"
+                maxLength={16}
                 value={id_account}
                 onChange={(e) => setIdAccount(e.target.value)}
                 required

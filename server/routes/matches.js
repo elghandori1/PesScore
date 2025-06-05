@@ -153,7 +153,7 @@ router.post('/reject-match/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found or already processed' });
+      return res.status(404).json({ error: 'المباراة غير موجودة أو لا يمكن حذفها' });
     }
 
     // Update match status to rejected instead of deleting
@@ -182,7 +182,7 @@ router.post('/resend-match/:id', ensureAuthenticated, async (req, res) => {
     );
 
     if (match.length === 0) {
-      return res.status(404).json({ error: 'Match not found or cannot be resent' });
+      return res.status(404).json({ error: 'المباراة غير موجودة أو لا يمكن حذفها' });
     }
 
     // Create a new match with the same scores
