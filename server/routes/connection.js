@@ -22,7 +22,7 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'يجب أن يكون اسم الحساب من 3 إلى 16 حرفًا' });
     }
 
-    if (name_account.length < 12 || id_account.length > 16) {
+    if (id_account.length < 12 || id_account.length > 16) {
       return res.status(400).json({ error: 'يجب أن يكون معرف الحساب من 12 إلى 16 حرفًا' });
     }
 
