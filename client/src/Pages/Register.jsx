@@ -154,8 +154,8 @@ function Register() {
                 id="id_account"
                 name="id_account"
                 placeholder="أدخل معرف اللعبة الخاص بك"
-                maxLength={16}
                 value={id_account}
+                maxLength={16}
                 onChange={(e) => setIdAccount(e.target.value)}
                 required
                 className="w-full p-2.5 xs:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-xs xs:text-sm"
