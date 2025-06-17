@@ -24,7 +24,7 @@ dist-ssr
 *.sw?
 
 # for me 
-
-heplerPes.txt
+.vscode/settings.json
 database.txt
 ./server/.env
+./client/.env

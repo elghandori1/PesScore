@@ -9,7 +9,7 @@ CREATE TABLE users (
     id_account VARCHAR(255) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     INDEX idx_name_account (name_account)
 );
 
@@ -19,7 +19,7 @@ CREATE TABLE friend_requests (
     sender_id INT NOT NULL,
     receiver_id INT NOT NULL,
     status ENUM('pending', 'rejected') DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE,
     UNIQUE (sender_id, receiver_id)
@@ -32,14 +32,13 @@ CREATE TABLE friendships (
     user2_id INT NOT NULL,
     status ENUM('active', 'pending_removal') DEFAULT 'active',
     requested_by INT,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user1_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (user2_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE SET NULL,
     UNIQUE (user1_id, user2_id)
 );
 
--- Matches table
 CREATE TABLE matches (
     id INT AUTO_INCREMENT PRIMARY KEY,
     player1_id INT NOT NULL,
@@ -48,7 +47,7 @@ CREATE TABLE matches (
     player1_score INT,
     player2_score INT,
     status ENUM('pending', 'confirmed', 'rejected') DEFAULT 'pending',
-    match_date DATETIME DEFAULT CURRENT_TIMESTAMP,
+    match_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     created_by INT NOT NULL,
     FOREIGN KEY (player1_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (player2_id) REFERENCES users(id) ON DELETE CASCADE,
@@ -63,7 +62,7 @@ CREATE TABLE match_deletion_requests (
     match_id INT NOT NULL,
     requested_by INT NOT NULL,
     status ENUM('pending', 'rejected') DEFAULT 'pending',
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     responded_at DATETIME,
     FOREIGN KEY (match_id) REFERENCES matches(id) ON DELETE CASCADE,
     FOREIGN KEY (requested_by) REFERENCES users(id) ON DELETE CASCADE,
@@ -77,18 +76,8 @@ CREATE TABLE admins (
     role ENUM('admin', 'superadmin') DEFAULT 'admin' NOT NULL,
     email VARCHAR(255) NOT NULL UNIQUE,
     admin_password VARCHAR(255) NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     revoked_at DATETIME
-);
-
--- Notifications table
-CREATE TABLE notifications (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    title VARCHAR(255) NOT NULL,
-    message TEXT NOT NULL,
-    created_by INT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_by) REFERENCES admins(id) ON DELETE CASCADE
 );
 
 -- session table 

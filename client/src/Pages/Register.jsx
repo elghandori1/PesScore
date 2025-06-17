@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Register() {
   const [name_account, setNameAccount] = useState('');
@@ -48,7 +49,7 @@ function Register() {
     setLoading(true);
     try {
       await axios.post(
-        'http://localhost:5000/connection/register',
+        `${API_BASE_URL}/connection/register`,
         { name_account, id_account, email, password },
         {
           headers: { 'Content-Type': 'application/json' },

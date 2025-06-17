@@ -14,6 +14,7 @@ import Adminlog from "./admin/Adminlog.jsx";
 import AdminRegister from "./admin/AdminRegister.jsx";
 import NotFound from "./Pages/NotFound.jsx";
 import Developer from "./dev/Developer.jsx";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const PreventLoggedInAccess = () => {
   const [user, setUser] = useState(null);
@@ -22,7 +23,7 @@ const PreventLoggedInAccess = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/auth/check-auth", {
+        const response = await axios.get(`${API_BASE_URL}/auth/check-auth`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
@@ -80,7 +81,7 @@ const RequireAuth = () => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/auth/check-auth", {
+        const response = await axios.get(`${API_BASE_URL}/auth/check-auth`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",

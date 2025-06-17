@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function NewMatch() {
   const { id: friendId } = useParams();
@@ -18,7 +19,7 @@ function NewMatch() {
     const fetchFriend = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/friends/list-friends`,
+          `${API_BASE_URL}/friends/list-friends`,
           {
             withCredentials: true,
           }
@@ -66,7 +67,7 @@ function NewMatch() {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:5000/matches/create-match",
+        `${API_BASE_URL}/matches/create-match`,
         {
           friendId,
           userScore: parseInt(userScore),

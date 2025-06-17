@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Listfriend() {
   const [activeTab, setActiveTab] = useState("friends");
@@ -34,38 +35,38 @@ function Listfriend() {
   const fetchFriendData = async () => {
     setLoading(true);
     try {
-      const friendsRes = await axios.get("http://localhost:5000/friends/list-friends", {
+      const friendsRes = await axios.get(`${API_BASE_URL}/friends/list-friends`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
 
-      const currentUserRes = await axios.get("http://localhost:5000/auth/check-auth", {
+      const currentUserRes = await axios.get(`${API_BASE_URL}/auth/check-auth`, {
         withCredentials: true,
       });
       setUserId(currentUserRes.data.user?.id);
       setFriends(friendsRes.data.friends);
       setFilteredFriends(friendsRes.data.friends);
 
-      const sentRes = await axios.get("http://localhost:5000/friends/pending-friend-requests/sent", {
+      const sentRes = await axios.get(`${API_BASE_URL}/friends/pending-friend-requests/sent`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
       setPendingSentRequests(sentRes.data.pendingSentRequests);
 
-      const receivedRes = await axios.get("http://localhost:5000/friends/pending-friend-requests/received", {
+      const receivedRes = await axios.get(`${API_BASE_URL}/friends/pending-friend-requests/received`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
       setPendingReceivedRequests(receivedRes.data.pendingReceivedRequests);
 
       // Fetch pending matches where the current user is the receiver
-      const pendingMatchesRes = await axios.get("http://localhost:5000/matches/pending-matches/received", {
+      const pendingMatchesRes = await axios.get(`${API_BASE_URL}/matches/pending-matches/received`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
 
       // Fetch rejected matches where the current user is the sender
-      const rejectedMatchesRes = await axios.get("http://localhost:5000/matches/rejected-matches/sent", {
+      const rejectedMatchesRes = await axios.get(`${API_BASE_URL}/matches/rejected-matches/sent`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
@@ -78,7 +79,7 @@ function Listfriend() {
       setPendingMatches(combinedMatches);
 
       // Add this new fetch for deletion requests
-      const deletionRequestsRes = await axios.get("http://localhost:5000/matches/deletion-requests", {
+      const deletionRequestsRes = await axios.get(`${API_BASE_URL}/matches/deletion-requests`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
@@ -134,7 +135,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/friends/remove-friend/${friendId}`,
+        `${API_BASE_URL}/friends/remove-friend/${friendId}`,
         {},
         {
           withCredentials: true,
@@ -155,7 +156,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/friends/cancel-removal/${friendId}`,
+        `${API_BASE_URL}/friends/cancel-removal/${friendId}`,
         {},
         {
           withCredentials: true,
@@ -176,7 +177,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/friends/accept-removal/${friendId}`,
+        `${API_BASE_URL}/friends/accept-removal/${friendId}`,
         {},
         {
           withCredentials: true,
@@ -197,7 +198,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/friends/reject-removal/${friendId}`,
+        `${API_BASE_URL}/friends/reject-removal/${friendId}`,
         {},
         {
           withCredentials: true,
@@ -218,7 +219,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.delete(
-        `http://localhost:5000/friends/reject-friend-request/${requestId}`,
+        `${API_BASE_URL}/friends/reject-friend-request/${requestId}`,
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
@@ -238,7 +239,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.post(
-        `http://localhost:5000/friends/accept-friend-request/${requestId}`,
+        `${API_BASE_URL}/friends/accept-friend-request/${requestId}`,
         {},
         {
           withCredentials: true,
@@ -259,7 +260,7 @@ function Listfriend() {
     setLoading(true);
     try {
       const response = await axios.delete(
-        `http://localhost:5000/friends/cancel-friend-request/${requestId}`,
+        `${API_BASE_URL}/friends/cancel-friend-request/${requestId}`,
         {
           withCredentials: true,
           headers: { "Content-Type": "application/json" },
