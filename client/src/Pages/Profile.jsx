@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Profile() {
   const [user, setUser] = useState(null);
@@ -11,7 +12,7 @@ function Profile() {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/profile", {
+        const response = await axios.get(`${API_BASE_URL}/profile`, {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, Link } from "react-router-dom";
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function NewFriend() {
   const [search, setSearch] = useState("");
@@ -28,7 +29,7 @@ function NewFriend() {
     const fetchPendingRequests = async () => {
       setLoading(true);
       try {
-        const res = await axios.get("http://localhost:5000/friends/pending-friend-requests/sent", {
+        const res = await axios.get(`${API_BASE_URL}/friends/pending-friend-requests/sent`,  {
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
@@ -67,7 +68,7 @@ function NewFriend() {
     setHasSearched(true);
 
     try {
-      const res = await axios.get("http://localhost:5000/friends/search-users", {
+      const res = await axios.get(`${API_BASE_URL}/friends/search-users`,{
         params: { query: search },
         withCredentials: true,
         headers: {
@@ -99,7 +100,7 @@ function NewFriend() {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/friends/send-friend-request",
+        `${API_BASE_URL}/friends/send-friend-request`,
         { receiver_id: receiverId },
         {
           withCredentials: true,
@@ -113,7 +114,7 @@ function NewFriend() {
       setHasSearched(false);
       // Refresh pending requests 
       try {
-        const updatedRes = await axios.get("http://localhost:5000/friends/pending-friend-requests/sent", {
+        const updatedRes = await axios.get(`${API_BASE_URL}/friends/pending-friend-requests/sent`,{
           withCredentials: true,
           headers: {
             "Content-Type": "application/json",
@@ -152,7 +153,7 @@ function NewFriend() {
     setLoading(true);
 
     try {
-      const res = await axios.delete(`http://localhost:5000/friends/cancel-friend-request/${requestId}`, {
+      const res = await axios.delete(`${API_BASE_URL}/friends/cancel-friend-request/${requestId}`, {
         withCredentials: true,
         headers: {
           "Content-Type": "application/json",

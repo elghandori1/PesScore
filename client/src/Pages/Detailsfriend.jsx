@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import footballBg from "../assets/images/efootbalBG5.png";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 function Detailsfriend() {
   const { id } = useParams();
@@ -13,6 +14,7 @@ function Detailsfriend() {
     status: "active",
     requested_by: null,
   });
+  
   const [currentUserId, setCurrentUserId] = useState(null);
   const [receivedPendingCount, setReceivedPendingCount] = useState(0);
   const [rejectedCount, setRejectedCount] = useState(0);
@@ -30,7 +32,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       const userResponse = await axios.get(
-        "http://localhost:5000/auth/check-auth",
+       `${API_BASE_URL}/auth/check-auth`,
         {
           withCredentials: true,
         }
@@ -38,7 +40,7 @@ function Detailsfriend() {
       setCurrentUserId(userResponse.data.user?.id);
 
       const response = await axios.get(
-        `http://localhost:5000/matches/matches-score/${id}`,
+        `${API_BASE_URL}/matches/matches-score/${id}`,
         {
           withCredentials: true,
         }
@@ -82,7 +84,7 @@ function Detailsfriend() {
   const fetchDeletionRequests = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:5000/matches/deletion-requests",
+       `${API_BASE_URL}/matches/deletion-requests`,
         {
           withCredentials: true,
         }
@@ -119,7 +121,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/accept-match/${matchId}`,
+        `${API_BASE_URL}/matches/accept-match/${matchId}`,
         {},
         {
           withCredentials: true,
@@ -137,7 +139,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/reject-match/${matchId}`,
+        `${API_BASE_URL}/matches/reject-match/${matchId}`,
         {},
         {
           withCredentials: true,
@@ -156,7 +158,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.delete(
-        `http://localhost:5000/matches/cancel-match/${matchId}`,
+        `${API_BASE_URL}/matches/cancel-match/${matchId}`,
         {
           withCredentials: true,
         }
@@ -175,7 +177,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/resend-match/${matchId}`,
+       `${API_BASE_URL}/matches/resend-match/${matchId}`,
         {},
         {
           withCredentials: true,
@@ -194,7 +196,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/request-delete/${matchId}`,
+        `${API_BASE_URL}/matches/request-delete/${matchId}`,
         {},
         {
           withCredentials: true,
@@ -213,7 +215,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/cancel-delete/${matchId}`,
+       `${API_BASE_URL}/matches/cancel-delete/${matchId}`,
         {},
         {
           withCredentials: true,
@@ -234,7 +236,7 @@ function Detailsfriend() {
     setLoading(true);
     try {
       await axios.post(
-        `http://localhost:5000/matches/respond-delete/${matchId}`,
+        `${API_BASE_URL}/matches/respond-delete/${matchId}`,
         { accept },
         { withCredentials: true }
       );
