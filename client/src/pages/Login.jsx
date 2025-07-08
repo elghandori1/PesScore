@@ -1,19 +1,19 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axiosClient from "../api/axiosClient";
-import ErrorMessage from "../components/ErrorMessage";
 import useAuth from "../auth/useAuth";
+import {useMessage} from '../hooks/useMessage';
 
 const Login = () => {
   const [idAccount, setIdAccount] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const { setUser, setJustLoggedIn } = useAuth();
   const navigate = useNavigate();
+  const { showMessage, clearMessage } = useMessage();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+   clearMessage();
     try {
       const response = await axiosClient.post("/auth/login", {
         id_account: idAccount.trim(),
@@ -23,13 +23,12 @@ const Login = () => {
       setJustLoggedIn(true);
       navigate("/");
     } catch (error) {
-      setError(error.response?.data?.message || "Login failed");
+      showMessage(error.response?.data?.message || "Login failed",'error');
     }
   };
 
   return (
     <main className="px-2 xs:px-3 sm:px-4 py-4" dir="rtl">
-      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
       <section className="bg-white p-4 sm:p-5 md:p-10 rounded-lg shadow-md w-full max-w-md mx-auto">
         <div className="text-center mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-1">

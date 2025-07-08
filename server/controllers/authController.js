@@ -27,6 +27,11 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'معرف المستخدم مستخدم مسبقًا' });
     }
 
+    const existingEmail = await AuthModel.findByEmail(email);
+    if (existingEmail) {
+      return res.status(400).json({ message: 'البريد الإلكتروني مستخدم مسبقًا' });
+    } 
+
     await AuthModel.createUser(name_account, id_account, email, password);
     res.status(201).json({ message: 'تم إنشاء الحساب بنجاح' });
   } catch (error) {

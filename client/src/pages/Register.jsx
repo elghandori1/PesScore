@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ErrorMessage from "../components/ErrorMessage";
+import Message from "../components/Message";
 import axiosClient from "../api/axiosClient";
+import {useMessage} from '../hooks/useMessage';
 
 const Register = () => {
   const [nameAccount, setNameAccount] = useState("");
@@ -11,14 +12,11 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-
-  const handleCloseError = () => {
-    setError("");
-  };
+  const { showMessage, clearMessage } = useMessage();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError("");
+    clearMessage();
 
     if (password !== confirmPassword) {
       return setError("كلمة المرور غير متطابقة");
@@ -33,14 +31,12 @@ const Register = () => {
       });
       navigate("/login");
     } catch (error) {
-      setError(error.response?.data?.message || "فشل في التسجيل");
+      showMessage(error.response?.data?.message || "Register failed",'error');
     }
   };
 
   return (
     <main className="px-2 xs:px-3 sm:px-4 py-4" dir="rtl">
-      {error && <ErrorMessage message={error} onClose={() => setError("")} />}
-
       <section className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md w-full max-w-md mx-auto">
         <div className="text-center mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-1">

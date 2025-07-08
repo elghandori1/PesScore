@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser');
 require('dotenv').config();
 const authRoutes = require('./routes/authRoutes');
 const profile = require('./routes/profileRoutes')
+const friendRoutes = require('./routes/friendRoutes')
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cors({
 // Routes
 app.use('/auth', authRoutes);
 app.use('/user', profile);
+app.use('/friend', friendRoutes);
 
 const PORT = 5000;
   app.listen(PORT, () => {

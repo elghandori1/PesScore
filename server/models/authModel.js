@@ -15,6 +15,11 @@ class AuthModel {
     return users[0]; // return the first user or undefined
   }
 
+  static async findByEmail(email) {
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ?', [email]);
+    return users[0]; 
+  }
+
   static async findById(id) {
     const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);
     return users[0];

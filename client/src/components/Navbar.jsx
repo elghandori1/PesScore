@@ -13,7 +13,7 @@ const Navbar = () => {
 
       {user && (
         <div className="flex gap-2 sm:gap-3 items-center">
-          {location.pathname === "/profile" ? (
+          {location.pathname !== "/" ? (
             <Link
               to="/"
               className="font-almarai bg-white/20 hover:bg-white/40 text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs sm:text-sm md:text-base flex items-center gap-1"
