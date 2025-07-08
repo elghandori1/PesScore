@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import useAuth from "../auth/useAuth";
+import {useMessage} from '../hooks/useMessage';
 
 const Home = () => {
   const { user } = useAuth();
-
+  const { clearMessage } = useMessage();
+  clearMessage();
   if (!user) return null;
 
   return (
@@ -14,16 +16,15 @@ const Home = () => {
         <h2 className="text-lg xs:text-xl sm:text-2xl mb-2 text-blue-600 font-semibold">
           PesScore
         </h2>
-        <p className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed font-almarai">
-          هو تطبيق ويب متوافق مع الجوّال مصمم لتتبع وعرض نتائج مباريات كرة القدم
-          بين الأصدقاء.
+        <p className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed font-almarai" dir="ltr">
+          مرحبًا بك في PesScore، حيث يمكنك إدارة المباريات بين أصدقائك بسهولة. يمكنك إضافة أصدقاء جدد، عرض قائمة الأصدقاء، وإدارة طلبات الصداقة. ابدأ الآن واستمتع بتجربة التواصل مع أصدقائك!
         </p>
       </section>
 
       {/* Action Buttons */}
       <div className="grid grid-cols-2 gap-2 xs:gap-3 sm:gap-4 md:gap-6 max-w-xl w-full mt-4 sm:mt-6">
         <Link
-          to="/new-friend"
+          to="/add-friend"
           className="bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 transform hover:scale-105 transition text-white p-3 xs:p-4 sm:p-5 rounded-lg xs:rounded-xl text-center flex flex-col items-center shadow-md hover:shadow-lg backdrop-blur-sm"
         >
           <svg
