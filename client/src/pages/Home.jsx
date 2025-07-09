@@ -47,7 +47,7 @@ const Home = () => {
         </Link>
 
         <Link
-          to="/list-friend"
+          to="/Dashboard-Friend"
           className="bg-gradient-to-r from-blue-700 to-blue-500 hover:from-blue-800 hover:to-blue-600 transform hover:scale-105 transition text-white p-3 xs:p-4 sm:p-5 rounded-lg xs:rounded-xl text-center flex flex-col items-center shadow-md hover:shadow-lg backdrop-blur-sm"
         >
           <svg
