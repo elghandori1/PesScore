@@ -90,4 +90,8 @@ const cancelFriendRequest = async (req, res) => {
   }
 };
 
-module.exports = { SearchFriend, requestFriend, PendingRequests, cancelFriendRequest };
+const listFriends = async (req, res) => {
+
+};
+
+module.exports = { SearchFriend, requestFriend, PendingRequests, cancelFriendRequest, listFriends };
