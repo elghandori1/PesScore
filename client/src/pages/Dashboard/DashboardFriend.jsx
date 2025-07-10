@@ -1,36 +1,12 @@
-import React, { useState, useEffect } from "react";
-import axiosClient from "../api/axiosClient";
-import { useMessage } from "../hooks/useMessage";
-import { Link } from "react-router-dom";
+import {useState}  from "react";
+import PendingFriends from "./PendingFriends";
 
 function DashboardFriend() {
   const [activeTab, setActiveTab] = useState("friends");
-  const [pendingSubTab, setPendingSubTab] = useState("receivedRequests");
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [pending, setPending] = useState([]);
-
   const handleTabSwitch = (tab) => setActiveTab(tab);
   const handleSearchInput = (e) => setSearchQuery(e.target.value);
-  const handlePendingSubTabSwitch = (subTab) => setPendingSubTab(subTab);
 
-  useEffect(() => {
-    pendingFriends();
-  }, []);
-
-  const pendingFriends = async () => {
-    try {
-      const response = await axiosClient.get("/friends/pending");
-      if (response.data.user) {
-        setPending(response.data.user);
-      } else {
-        setPending([]);
-      }
-    } catch (error) {
-      console.error("Error fetching pending friends:", error);
-      useMessage("حدث خطأ أثناء جلب الأصدقاء المعلقين", "error");
-    }
-  };
 
   return (
     <main className="flex flex-col items-center w-full px-2 xs:px-3 sm:px-6 md:px-8 pt-10 xs:pb-16">
@@ -120,52 +96,7 @@ function DashboardFriend() {
           </div>
         )}
         {/* Pending Tab Content */}
-        {!loading && activeTab === "pending" && (
-          <div className="w-full mt-3 rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm">
-            <div className="flex w-full text-center text-sm sm:text-base font-almarai">
-              {/* المستلمة */}
-              <button
-                className={`w-1/2 py-3 font-medium flex justify-center items-center gap-2 transition duration-200 ${
-                  pendingSubTab === "receivedRequests"
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:text-blue-600"
-                }`}
-                onClick={() => handlePendingSubTabSwitch("receivedRequests")}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 sm:h-5 sm:w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
-                  <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
-                </svg>
-                المستلمة
-              </button>
-
-              {/* المرسلة */}
-              <button
-                className={`w-1/2 py-3 font-medium flex justify-center items-center gap-2 transition duration-200 ${
-                  pendingSubTab === "sentRequests"
-                    ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white"
-                    : "bg-gray-100 text-gray-600 hover:text-blue-600"
-                }`}
-                onClick={() => handlePendingSubTabSwitch("sentRequests")}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 sm:h-5 sm:w-5"
-                  viewBox="0 0 20 20"
-                  fill="currentColor"
-                >
-                  <path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.429A1 1 0 009 15.571V11a1 1 0 112 0v4.571a1 1 0 00.725.962l5 1.428a1 1 0 001.17-1.408l-7-14z" />
-                </svg>
-                المرسلة
-              </button>
-            </div>
-          </div>
-        )}
+        {activeTab === "pending" && <PendingFriends/>}
       </section>
     </main>
   );

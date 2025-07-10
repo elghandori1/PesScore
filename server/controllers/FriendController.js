@@ -90,8 +90,26 @@ const cancelFriendRequest = async (req, res) => {
   }
 };
 
-const listFriends = async (req, res) => {
+const ReceivedFriends = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'غير مصرح بالدخول' });
+    }
 
+    const requests = await friendModel.received_friends(userId);
+    res.status(200).json({user:requests});
+
+  } catch (error) {
+    console.error('Received friends error:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+module.exports = { 
+  SearchFriend,
+  requestFriend, 
+  PendingRequests, 
+  cancelFriendRequest, 
+  ReceivedFriends 
 };
-
-module.exports = { SearchFriend, requestFriend, PendingRequests, cancelFriendRequest, listFriends };

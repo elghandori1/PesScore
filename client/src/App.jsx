@@ -14,7 +14,7 @@ import NotFound from './components/NotFound';
 import WelcomeMessage from './components/WelcomeMessage';
 import Profile from './pages/Profile';
 import AddFriend from './pages/AddFriend';
-import DashboardFriend from './pages/DashboardFriend';
+import DashboardFriend from './pages/Dashboard/DashboardFriend';
 
 function App() {
 
