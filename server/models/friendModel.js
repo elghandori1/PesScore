@@ -46,11 +46,20 @@ class friendModel {
   }
 
   static async cancel_Request(senderId, requestId) {
-        const [result] = await pool.query(
+    const [result] = await pool.query(
       'DELETE FROM friend_requests WHERE id = ? AND sender_id = ? AND status = "pending"',
       [requestId, senderId]
     );
     return result;
+  }
+
+  static async received_friends(userId) {
+    const [users] = await pool.query(
+      `SELECT fr.id, fr.sender_id, u.name_account, id_account ,u.created_at
+      FROM friend_requests fr
+      JOIN users u ON fr.sender_id = u.id
+      WHERE fr.receiver_id = ? AND fr.status = 'pending'`, [userId]);
+    return users;
   }
 
 }

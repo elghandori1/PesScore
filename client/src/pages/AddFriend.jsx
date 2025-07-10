@@ -90,6 +90,7 @@ const AddFriend = () => {
         err.response?.data?.message || "حدث خطأ أثناء إلغاء طلب الصداقة",
         "error"
       );
+      console.error("Error canceling friend request:", err);
     } finally {
       setLoading(false);
     }
