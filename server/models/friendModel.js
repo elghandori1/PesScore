@@ -9,34 +9,45 @@ class friendModel {
     return users;
   }
 
-  static async addFriend(senderId, receiverId) {
+  static async addFriend(receiverId, senderId) {
     const connection = await pool.getConnection();
-
+  
     try {
       await connection.beginTransaction();
-
+  
       const [existingRequest] = await connection.query(
-        "SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ?",
-        [senderId, receiverId]
+        'SELECT id FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)',
+        [senderId, receiverId, receiverId, senderId]
       );
-
+  
       if (existingRequest.length > 0) {
         await connection.rollback();
-        throw { message: "تم إرسال طلب صداقة مسبقًا" };
+        throw { message: "يوجد طلب صداقة بين المستخدمين" };
       }
-
+  
+      const [existingFriendship] = await connection.query(
+        'SELECT id FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+        [senderId, receiverId, receiverId, senderId]
+      );
+  
+      if (existingFriendship.length > 0) {
+        await connection.rollback();
+        throw { message: "هادا المستخدم يوجد في قائة الأصدقاء" };
+      }
+  
       await connection.query(
         "INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES (?, ?, ?)",
         [senderId, receiverId, "pending"]
       );
-
+  
       const [user] = await connection.query(
         "SELECT name_account FROM users WHERE id = ?",
         [senderId]
       );
-
+  
       await connection.commit();
       return { name: user[0].name_account };
+  
     } catch (error) {
       await connection.rollback();
       throw error;
@@ -44,6 +55,7 @@ class friendModel {
       connection.release();
     }
   }
+  
 
   static async pending_requests(userId) {
     const [user] = await pool.query(
@@ -86,7 +98,7 @@ class friendModel {
       );
 
       if (requests.length === 0) {
-         await connection.rollback();
+        await connection.rollback();
         return null;
       }
 
@@ -127,17 +139,18 @@ class friendModel {
 
   static async getFriends(userId) {
     const [friends] = await pool.query(
-      `SELECT u.id, u.name_account, u.id_account, u.created_at
-     FROM friendships f
-     JOIN users u ON (u.id = f.user1_id OR u.id = f.user2_id)
-     WHERE (f.user1_id = ? OR f.user2_id = ?) AND f.status = 'active' AND u.id != ?`,
+    `SELECT u.id, u.name_account, u.id_account, f.created_at, f.status, f.requested_by
+       FROM friendships f
+       JOIN users u ON (u.id = f.user1_id OR u.id = f.user2_id)
+       WHERE (f.user1_id = ? OR f.user2_id = ?) AND u.id != ? order by f.created_at DESC`,
       [userId, userId, userId]
     );
     return friends;
   }
 
-  // Remove a friend
- static async removeFriend(userId, friendId) {
+  // Remove a friend request
+ static async removeFriend_request(userId, friendId)
+ {
   const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
@@ -160,6 +173,106 @@ class friendModel {
     await connection.query(
       'UPDATE friendships SET status = ?, requested_by = ? WHERE id = ?',
       ['pending_removal', userId, friendship[0].id]
+    );
+
+    await connection.commit();
+    return { id: friendship[0].id };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+ // Cancel a remove friend request
+static async cancelRemoveFriend(userId, friendId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [friendship] = await connection.query(
+      `SELECT id FROM friendships 
+       WHERE ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)) 
+       AND status = 'pending_removal'`,
+      [userId, friendId, friendId, userId]
+    );
+
+    if (friendship.length === 0) {
+      await connection.rollback();
+      throw { message: 'لا يوجد طلب إزالة صداقة قيد الانتظار' };
+    }
+
+    await connection.query(
+      'UPDATE friendships SET status = "active", requested_by = NULL WHERE id = ?',
+      [friendship[0].id]
+    );
+
+    await connection.commit();
+    return { id: friendship[0].id };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+// Accept a remove friend request
+static async acceptRemoveFriend(userId, friendId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [friendship] = await connection.query(
+      `SELECT id FROM friendships 
+       WHERE ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)) 
+       AND status = 'pending_removal'`,
+      [userId, friendId, friendId, userId]
+    );
+
+    if (friendship.length === 0) {
+      await connection.rollback();
+      throw { message: 'لا يوجد طلب إزالة صداقة قيد الانتظار' };
+    }
+
+    await connection.query(
+      'DELETE FROM friendships WHERE id = ?',
+      [friendship[0].id]
+    );
+
+    await connection.commit();
+    return { id: friendship[0].id };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+// Reject a remove friend request
+static async rejectRemoveFriend(userId, friendId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [friendship] = await connection.query(
+      `SELECT id FROM friendships 
+       WHERE ((user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)) 
+       AND status = 'pending_removal'`,
+      [userId, friendId, friendId, userId]
+    );
+
+    if (friendship.length === 0) {
+      await connection.rollback();
+      throw { message: 'لا يوجد طلب إزالة صداقة قيد الانتظار' };
+    }
+
+    // Optional: keep friendship but mark it active again (alternative to deleting)
+    await connection.query(
+      'UPDATE friendships SET status = "active", requested_by = NULL WHERE id = ?',
+      [friendship[0].id]
     );
 
     await connection.commit();

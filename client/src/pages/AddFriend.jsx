@@ -64,7 +64,7 @@ const AddFriend = () => {
       setHasSearched(false);
       setUsers(users.filter((user) => user.id !== receiverId));
       setSearch("");
-      const pendingRes = await axiosClient.get("/friend/pending");// festch updated pending requests
+      const pendingRes = await axiosClient.get("/friend/pending");
       setPendingRequests(pendingRes.data.user || []);
     } catch (err) {
       showMessage(

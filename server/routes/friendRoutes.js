@@ -7,7 +7,10 @@ const { SearchFriend, requestFriend,
         AcceptFriendRequest,
         RejectFriendRequest,
         getFriends,
-        RemoveFriend
+        RemoveFriendRequest,
+        CancelRemoveFriend,
+        AcceptRemoveFriend,
+        RejectRemoveFriend
      } = require('../controllers/FriendController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -18,7 +21,10 @@ router.delete("/request/:id", authMiddleware, cancelFriendRequest);
 
 // for dashboard friends part
 router.get("/list-friend", authMiddleware, getFriends);
-router.delete("/remove-friend/:id", authMiddleware, RemoveFriend);
+router.put("/remove-request/:id", authMiddleware, RemoveFriendRequest);
+router.put("/cancel-remove-request/:id", authMiddleware, CancelRemoveFriend);
+router.put("/accept-remove-request/:id", authMiddleware, AcceptRemoveFriend);
+router.put("/reject-remove-request/:id", authMiddleware, RejectRemoveFriend);
 
 // for dashboard pending part
 router.get("/received", authMiddleware, ReceivedFriends);

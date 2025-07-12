@@ -15,9 +15,10 @@ import WelcomeMessage from './components/WelcomeMessage';
 import Profile from './pages/Profile';
 import AddFriend from './pages/AddFriend';
 import DashboardFriend from './pages/Dashboard/DashboardFriend';
+import FriendDetails from './pages/FriendDetails';
 
-function App() {
-
+function App()
+{
   return (
     <Router>
       <AuthProvider>
@@ -33,8 +34,8 @@ function App() {
               <Route path="/register" element={<PublicRoute><div dir="rtl"><Register /></div></PublicRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/add-friend" element={<ProtectedRoute><AddFriend /></ProtectedRoute>} /> 
-              <Route path="/Dashboard-Friend" element={<ProtectedRoute><div><DashboardFriend/></div></ProtectedRoute>} />
-        
+              <Route path="/Dashboard-Friend" element={<ProtectedRoute><DashboardFriend/></ProtectedRoute>} />
+              <Route path="/friend-details/:id" element={<ProtectedRoute><FriendDetails/></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
