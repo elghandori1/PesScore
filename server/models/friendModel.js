@@ -1,47 +1,58 @@
 const pool = require('../config/db');
 
 class friendModel {
-  static async searchFriend(userId,query) {
-   
+  static async searchFriend(userId, query) {
     const [users] = await pool.query(
-      'SELECT  id, name_account , id_account FROM users WHERE (name_account = ? OR id_account = ?) AND id != ?',
+      "SELECT  id, name_account , id_account FROM users WHERE (name_account = ? OR id_account = ?) AND id != ?",
       [query, query, userId]
     );
-    return users; 
+    return users;
   }
 
   static async addFriend(senderId, receiverId) {
-    // Check if the friend request already exists
-    const [existingRequest] = await pool.query(
-      'SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ?',
-      [senderId, receiverId]
-    );
+    const connection = await pool.getConnection();
 
-    if (existingRequest.length > 0) {
-      throw { message: 'تم إرسال طلب صداقة مسبقًا' };
+    try {
+      await connection.beginTransaction();
+
+      const [existingRequest] = await connection.query(
+        "SELECT * FROM friend_requests WHERE sender_id = ? AND receiver_id = ?",
+        [senderId, receiverId]
+      );
+
+      if (existingRequest.length > 0) {
+        await connection.rollback();
+        throw { message: "تم إرسال طلب صداقة مسبقًا" };
+      }
+
+      await connection.query(
+        "INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES (?, ?, ?)",
+        [senderId, receiverId, "pending"]
+      );
+
+      const [user] = await connection.query(
+        "SELECT name_account FROM users WHERE id = ?",
+        [senderId]
+      );
+
+      await connection.commit();
+      return { name: user[0].name_account };
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
     }
-
-    // Insert the new friend request
-    await pool.query(
-      'INSERT INTO friend_requests (sender_id, receiver_id, status) VALUES (?, ?, ?)',
-      [senderId, receiverId, 'pending']
-    );
-
-    // Get the name of the user who sent the request
-    const [user] = await pool.query(
-      'SELECT name_account FROM users WHERE id = ?',
-      [senderId]
-    );
-
-    return { name: user[0].name_account };
   }
-  
+
   static async pending_requests(userId) {
     const [user] = await pool.query(
       `SELECT fr.id, fr.receiver_id, u.name_account, id_account ,u.created_at
       FROM friend_requests fr
       JOIN users u ON fr.receiver_id = u.id
-      WHERE fr.sender_id = ? AND fr.status = 'pending'`, [userId]);
+      WHERE fr.sender_id = ? AND fr.status = 'pending'`,
+      [userId]
+    );
     return user;
   }
 
@@ -58,9 +69,108 @@ class friendModel {
       `SELECT fr.id, fr.sender_id, u.name_account, id_account ,u.created_at
       FROM friend_requests fr
       JOIN users u ON fr.sender_id = u.id
-      WHERE fr.receiver_id = ? AND fr.status = 'pending'`, [userId]);
+      WHERE fr.receiver_id = ? AND fr.status = 'pending'`,
+      [userId]
+    );
     return users;
   }
+
+  static async accept_friend_request(userId, requestId) {
+    const connection = await pool.getConnection();
+    try {
+      await connection.beginTransaction();
+
+      const [requests] = await connection.query(
+        'SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = "pending"',
+        [requestId, userId]
+      );
+
+      if (requests.length === 0) {
+         await connection.rollback();
+        return null;
+      }
+
+      const request = requests[0];
+      const senderId = request.sender_id;
+
+      await connection.query("DELETE FROM friend_requests WHERE id = ?", [
+        requestId,
+      ]);
+
+      await connection.query(
+        "INSERT INTO friendships (user1_id, user2_id, status, requested_by, created_at) VALUES (?, ?, ?, ?, NOW())",
+        [
+          Math.min(senderId, userId),
+          Math.max(senderId, userId),
+          "active",
+          senderId,
+        ]
+      );
+
+      await connection.commit();
+      return request;
+    } catch (error) {
+      await connection.rollback();
+      throw error;
+    } finally {
+      connection.release();
+    }
+  }
+
+  static async reject_friend_request(userId, requestId) {
+    const [result] = await pool.query(
+      'DELETE FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = "pending"',
+      [requestId, userId]
+    );
+    return result;
+  }
+
+  static async getFriends(userId) {
+    const [friends] = await pool.query(
+      `SELECT u.id, u.name_account, u.id_account, u.created_at
+     FROM friendships f
+     JOIN users u ON (u.id = f.user1_id OR u.id = f.user2_id)
+     WHERE (f.user1_id = ? OR f.user2_id = ?) AND f.status = 'active' AND u.id != ?`,
+      [userId, userId, userId]
+    );
+    return friends;
+  }
+
+  // Remove a friend
+ static async removeFriend(userId, friendId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.beginTransaction();
+
+    const [friendship] = await connection.query(
+      'SELECT id, status FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+      [userId, friendId, friendId, userId]
+    );
+
+    if (friendship.length === 0) {
+      await connection.rollback();
+      throw { message: 'لم يتم العثور على الصداقة' };
+    }
+
+    if (friendship[0].status === 'pending_removal') {
+      await connection.rollback();
+      throw { message: 'الصداقة قيد الإزالة بالفعل' };
+    }
+
+    await connection.query(
+      'UPDATE friendships SET status = ?, requested_by = ? WHERE id = ?',
+      ['pending_removal', userId, friendship[0].id]
+    );
+
+    await connection.commit();
+    return { id: friendship[0].id };
+  } catch (error) {
+    await connection.rollback();
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
 
 }
 
