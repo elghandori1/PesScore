@@ -1,15 +1,12 @@
 import {useState}  from "react";
 import PendingFriends from "./PendingFriends";
-
+import ListFriends from "./ListFriends";
 function DashboardFriend() {
   const [activeTab, setActiveTab] = useState("friends");
-  const [searchQuery, setSearchQuery] = useState("");
   const handleTabSwitch = (tab) => setActiveTab(tab);
-  const handleSearchInput = (e) => setSearchQuery(e.target.value);
-
 
   return (
-    <main className="flex flex-col items-center w-full px-2 xs:px-3 sm:px-6 md:px-8 pt-10 xs:pb-16">
+    <main className="flex flex-col items-center w-full px-2 xs:px-3 sm:px-6 md:px-8 pt-10 xs:pb-14">
       <section className="bg-white/90 backdrop-blur-sm p-3 sm:p-6 rounded-xl shadow-xl w-full max-w-lg sm:max-w-2xl mx-auto">
         <div className="text-center mb-4 sm:mb-6">
           <h2 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1 sm:mb-2 font-almarai">
@@ -20,8 +17,8 @@ function DashboardFriend() {
           </p>
         </div>
 
-        {/* Tabs */}
-        <div
+        {/* Tabs nav*/}
+        <nav
           className="flex flex-row flex-wrap justify-around border-b border-gray-200 mb-4"
           dir="rtl"
         >
@@ -66,37 +63,11 @@ function DashboardFriend() {
             </svg>
             الأصدقاء
           </button>
-        </div>
+        </nav>
         <hr className="border-gray-300 mx-auto" />
 
-        {/* Search Input - Only shown in friends tab */}
-        {activeTab === "friends" && (
-          <div className="relative mb-3 sm:mb-5" dir="rtl">
-            <input
-              value={searchQuery}
-              onChange={handleSearchInput}
-              type="text"
-              placeholder="البحث عن صديقك من قائمة الأصدقاء."
-              className="block mt-3 w-full pr-10 pl-3 py-2 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-xs sm:text-base font-almarai"
-            />
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <svg
-                className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400"
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-          </div>
-        )}
         {/* Pending Tab Content */}
-        {activeTab === "pending" && <PendingFriends/>}
+        {activeTab === "friends" ? <ListFriends/> : <PendingFriends/> }
       </section>
     </main>
   );

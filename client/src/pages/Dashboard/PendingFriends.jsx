@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
 
@@ -36,11 +36,13 @@ function PendingFriends() {
   }, []);
 
   const handleCancelRequest = async (requestId) => {
+     const confirmed = window.confirm("هل أنت متأكد أنك تريد إزالة هذا الصديق؟");
+    if (!confirmed) return;
     clearMessage();
     try {
-      await axiosClient.delete(`/friend/request/${requestId}`);
-      setSentRequests((prev) => prev.filter((r) => r.id !== requestId));
-      showMessage("تم إلغاء طلب الصداقة بنجاح", "success");
+     const res=await axiosClient.delete(`/friend/request/${requestId}`);
+     setSentRequests((prev) => prev.filter((r) => r.id !== requestId));
+     showMessage(res.data.message || "تم إلغاء طلب الصداقة بنجاح", "success");
     } catch (error) {
       showMessage(
         error.response?.data?.message || "حدث خطأ أثناء إلغاء طلب الصداقة",
@@ -49,11 +51,40 @@ function PendingFriends() {
     }
   };
 
+  const handleAcceptRequest = async (requestId) => {
+    clearMessage();
+    try {
+     const res= await axiosClient.post(`/friend/accept-request/${requestId}`);
+     setReceivedRequests((prev) => prev.filter((r) => r.id !== requestId));
+     showMessage(res.data.message || "تم قبول طلب الصداقة بنجاح", "success");
+    } catch (error) {
+      showMessage(
+        error.response?.data?.message || "حدث خطأ أثناء قبول طلب الصداقة",
+        "error"
+      );
+      console.error("Error accepting request:", error);
+    }
+  };
+
+  const handleRejectRequest = async (requestId)=>{
+    clearMessage();
+    try {
+     await axiosClient.delete(`/friend/reject-request/${requestId}`);
+      setReceivedRequests((prev) => prev.filter((r) => r.id !== requestId));
+      showMessage("تم رفض طلب الصداقة بنجاح", "success");
+    } catch (error) {
+      showMessage(
+        error.response?.data?.message || "حدث خطأ أثناء رفض طلب الصداقة",
+        "error"
+      );
+    }
+  }
+
   const renderRequestItem = (request, isReceived) => (
     <div
       key={request.id}
       className="flex justify-between items-center bg-gray-100 p-2 rounded-lg border border-gray-200"
-    >
+    > 
       <div>
         <p className="font-medium text-sm sm:text-base text-gray-700 font-almarai">
           {request.name_account}
@@ -68,10 +99,15 @@ function PendingFriends() {
 
       {isReceived ? (
         <div className="flex gap-2">
-          <button className="inline-flex items-center px-2.5 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs sm:text-sm">
+          <button
+            className="inline-flex items-center px-2.5 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs sm:text-sm"
+            onClick={() => handleAcceptRequest(request.id)}
+          >
             قبول
           </button>
-          <button className="px-2.5 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs sm:text-sm">
+          <button
+          onClick={()=> handleRejectRequest(request.id)}
+          className="px-2.5 py-1 bg-red-500 text-white rounded hover:bg-red-600 text-xs sm:text-sm">
             رفض
           </button>
         </div>
@@ -111,7 +147,7 @@ function PendingFriends() {
 
   return (
     <div className="w-full mt-3 rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm">
-      {/* Tabs - Mobile sizes adjusted */}
+      {/* Tabs */}
       <div className="flex w-full text-center text-sm sm:text-base font-almarai">
         <button
           className={`w-1/2 py-3 sm:py-3 font-medium flex justify-center items-center gap-2 transition duration-200 ${
@@ -155,11 +191,18 @@ function PendingFriends() {
       {/* Content */}
       {isLoading ? (
         <div className="py-8 text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600 text-sm sm:text-base">جاري التحميل...</p>
+          <div className="flex justify-center py-8">
+              <svg className="animate-spin h-6 w-6 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            </div>
+          <p className="mt-2 text-gray-600 text-sm sm:text-base">
+            جاري التحميل...
+          </p>
         </div>
       ) : (
-        <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto space-y-2 p-2">
+        <div className="max-h-[330px] sm:max-h-[400px] overflow-y-auto space-y-2 p-2">
           {currentRequests.length > 0
             ? currentRequests.map((req) =>
                 renderRequestItem(req, activeTab === "received")
