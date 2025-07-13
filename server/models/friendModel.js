@@ -285,6 +285,21 @@ static async rejectRemoveFriend(userId, friendId) {
   }
 }
 
+// Get friend details
+static async getFriendDetails(userId, friendId) {
+  const [rows] = await pool.query(`
+    SELECT u.id, u.name_account, u.id_account, f.status, f.created_at
+    FROM friendships f
+    JOIN users u ON u.id = ?
+    WHERE 
+      ((f.user1_id = ? AND f.user2_id = ?) OR (f.user1_id = ? AND f.user2_id = ?))
+      AND f.status = 'active'
+    LIMIT 1
+  `, [friendId, userId, friendId, friendId, userId]);
+
+  return rows.length > 0 ? rows[0] : null;
+}
+
 }
 
 module.exports = friendModel;

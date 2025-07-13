@@ -10,7 +10,8 @@ const { SearchFriend, requestFriend,
         RemoveFriendRequest,
         CancelRemoveFriend,
         AcceptRemoveFriend,
-        RejectRemoveFriend
+        RejectRemoveFriend,
+        FriendDetails
      } = require('../controllers/FriendController');
 const authMiddleware = require('../middleware/authMiddleware');
 
@@ -30,5 +31,8 @@ router.put("/reject-remove-request/:id", authMiddleware, RejectRemoveFriend);
 router.get("/received", authMiddleware, ReceivedFriends);
 router.post("/accept-request/:id", authMiddleware, AcceptFriendRequest);
 router.delete("/reject-request/:id", authMiddleware, RejectFriendRequest);
+
+// for friend details part
+router.get("/friend-details/:id", authMiddleware, FriendDetails);
 
 module.exports = router;

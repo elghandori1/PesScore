@@ -245,6 +245,29 @@ const RejectRemoveFriend = async (req, res) => {
   }
 };
 
+const FriendDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+
+    if (!userId) {
+      return res.status(401).json({ message: 'غير مصرح بالدخول' });
+    }
+
+    const friendDetails = await friendModel.getFriendDetails(userId, id);
+    
+    if (!friendDetails) {
+      return res.status(404).json({ message: 'الصديق غير موجود' });
+    }
+
+    res.status(200).json({ friend: friendDetails });
+
+  } catch (error) {
+    console.error('Friend details error:', error);
+    res.status(500).json({ message: 'حدث خطأ في الخادم' });
+  }
+}
+
 
 module.exports = { 
   SearchFriend,
@@ -258,5 +281,6 @@ module.exports = {
   RemoveFriendRequest,
   CancelRemoveFriend,
   AcceptRemoveFriend,
-  RejectRemoveFriend
+  RejectRemoveFriend,
+  FriendDetails
 };
