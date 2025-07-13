@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosClient from '../api/axiosClient';
 import useAuth from '../auth/useAuth';
+import { useMessage } from '../hooks/useMessage';
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { showMessage } = useMessage();
 
   useEffect(() => {
     if (!loading && !user) {
@@ -29,7 +31,12 @@ const Profile = () => {
 
   const changeLanguage = () => {
     // Placeholder for language change functionality
-    alert('Language change functionality will be implemented here');
+    showMessage('ستتم إضافة خيار تغيير اللغة في المستقبل','error');
+  };
+
+    const changeTheme = () => {
+    // Placeholder for language change functionality
+    showMessage('سيتم دعم تغيير اللغة لاحقاً','error');
   };
 
   if (loading || !user) return null;
@@ -54,6 +61,7 @@ const Profile = () => {
               </div>
               <div className="flex justify-end gap-2">
                 <button 
+                onClick={changeTheme}
                   className="px-3 sm:px-4 py-1.5 rounded-full bg-blue-500 text-white text-xs sm:text-sm hover:bg-blue-600 transition-colors"
                 >
                   المود

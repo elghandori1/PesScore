@@ -31,8 +31,6 @@ function ListFriends() {
   }, []);
 
   const handleRemoveFriend = async (friendId) => {
-    const confirmed = window.confirm("هل أنت متأكد أنك تريد إزالة هذا الصديق؟");
-    if (!confirmed) return;
     try {
       const res = await axiosClient.put(`/friend/remove-request/${friendId}`);
       showMessage(res.data.message || "تم طلب إزالة الصديق بنجاح", "success");

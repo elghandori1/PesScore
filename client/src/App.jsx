@@ -15,7 +15,7 @@ import WelcomeMessage from './components/WelcomeMessage';
 import Profile from './pages/Profile';
 import AddFriend from './pages/AddFriend';
 import DashboardFriend from './pages/Dashboard/DashboardFriend';
-import FriendDetails from './pages/FriendDetails';
+import FriendDetails from './pages/FriendDetails/FriendDetails';
 
 function App()
 {
