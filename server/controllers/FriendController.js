@@ -2,8 +2,11 @@ const friendModel = require('../models/friendModel');
 
 const SearchFriend = async (req, res) => {
   try {
-    const query = req.query.query.trim();
     const userId = req.user.userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'غير مصرح بالدخول' });
+    }
+    const query = req.query.query.trim();
     if (!query) {
       return res.status(400).json({ message: 'يجب إدخال عبارة البحث' });
     }
@@ -236,7 +239,7 @@ const RejectRemoveFriend = async (req, res) => {
     if (!userId) return res.status(401).json({ message: 'غير مصرح بالدخول' });
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك رفض إزالة نفسك كصديق' });
 
-    const result = await friendModel.rejectRemoveFriend(userId, id);
+    await friendModel.rejectRemoveFriend(userId, id);
     return res.status(200).json({ message: 'تم رفض طلب إزالة الصديق بنجاح' });
 
   } catch (error) {

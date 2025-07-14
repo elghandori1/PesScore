@@ -10,7 +10,6 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { showMessage, clearMessage } = useMessage();
 
@@ -19,7 +18,7 @@ const Register = () => {
     clearMessage();
 
     if (password !== confirmPassword) {
-      return setError("كلمة المرور غير متطابقة");
+      return showMessage("كلمة المرور غير متطابقة",'error');
     }
 
     try {
