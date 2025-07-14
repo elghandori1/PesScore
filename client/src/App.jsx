@@ -16,6 +16,7 @@ import Profile from './pages/Profile';
 import AddFriend from './pages/AddFriend';
 import DashboardFriend from './pages/Dashboard/DashboardFriend';
 import FriendDetails from './pages/FriendDetails/FriendDetails';
+import NewScore from './pages/FriendDetails/NewScore';
 
 function App()
 {
@@ -36,6 +37,7 @@ function App()
               <Route path="/add-friend" element={<ProtectedRoute><AddFriend /></ProtectedRoute>} /> 
               <Route path="/Dashboard-Friend" element={<ProtectedRoute><DashboardFriend/></ProtectedRoute>} />
               <Route path="/friend-details/:id" element={<ProtectedRoute><FriendDetails/></ProtectedRoute>} />
+              <Route path="/matchscore/:id" element={<ProtectedRoute><NewScore/></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

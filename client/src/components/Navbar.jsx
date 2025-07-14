@@ -39,6 +39,29 @@ const Navbar = () => {
                 </Link>
               );
             }
+            else if(/^\/matchscore\/\d+$/.test(location.pathname)){
+                const id = location.pathname.match(/^\/matchscore\/(\d+)$/)[1]; 
+                backLink = (
+                <Link
+                  to={`/friend-details/${id}`}
+                  className="font-almarai bg-white/20 hover:bg-white/40 text-white font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-full transition text-xs sm:text-sm md:text-base flex items-center gap-1"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  العودة إلى السابق
+                </Link>
+              );
+            }
             // Case: If current path is not root "/"
             else if (location.pathname !== "/") {
               backLink = (

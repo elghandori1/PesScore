@@ -243,7 +243,7 @@ function ListFriends() {
             ))
           ) : (
             <p className="text-center text-gray-500 font-almarai">
-              لا توجد أصدقاء.
+              لا يوجد أصدقاء.
             </p>
           )}
         </div>
