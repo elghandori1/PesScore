@@ -36,8 +36,6 @@ function PendingFriends() {
   }, []);
 
   const handleCancelRequest = async (requestId) => {
-     const confirmed = window.confirm("هل أنت متأكد أنك تريد إزالة هذا الصديق؟");
-    if (!confirmed) return;
     clearMessage();
     try {
      const res=await axiosClient.delete(`/friend/request/${requestId}`);
