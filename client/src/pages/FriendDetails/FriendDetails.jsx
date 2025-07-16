@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
 import MatchesTab from './MatchesTab';
-import PendingTab from './PendingTab'
+import PendingMatch from './PendingMatch'
 
 function FriendDetails() {
   const { id } = useParams();
@@ -83,7 +83,7 @@ function FriendDetails() {
         </nav>
         <hr className="border-gray-300 mx-auto" />
         {/* Tab Content */}
-        {activeTab === "matches" ? <MatchesTab/> : <PendingTab />}
+        {activeTab === "matches" ? <MatchesTab/> : <PendingMatch />}
       </section>
     </main>
   );

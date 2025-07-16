@@ -31,6 +31,55 @@ class matchModel {
     connection.release(); 
   }
   }
+
+    static async getPendingSentMatches(userId) {
+    const [rows] = await pool.query(
+      `
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = m.player2_id
+      WHERE m.created_by = ? AND m.status = 'pending'
+      ORDER BY m.match_date DESC
+      `,
+      [userId]
+    );
+    return rows;
+  }
+
+  static async getPendingReceivedMatches(userId) {
+    const [rows] = await pool.query(
+      `
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = m.created_by
+      WHERE m.player2_id = ? AND m.status = 'pending'
+      ORDER BY m.match_date DESC
+      `,
+      [userId]
+    );
+    return rows;
+  }
+
+  static async getMatchById(matchId) {
+    const [rows] = await pool.query(`SELECT * FROM matches WHERE id = ?`, [matchId]);
+    return rows[0];
+  }
+
+static async acceptMatch(matchId) {
+  await pool.query(
+    `UPDATE matches SET status = 'confirmed' WHERE id = ?`,
+    [matchId]
+  );
+}
+
+  static async rejectMatch(matchId) {
+    await pool.query(`UPDATE matches SET status = 'rejected' WHERE id = ?`, [matchId]);
+  }
+
+  static async cancelMatch(matchId) {
+    await pool.query(`DELETE FROM matches WHERE id = ?`, [matchId]);
+  }
+
 }
 
 module.exports = matchModel;
