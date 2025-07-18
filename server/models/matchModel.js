@@ -67,18 +67,46 @@ class matchModel {
 
 static async acceptMatch(matchId) {
   await pool.query(
-    `UPDATE matches SET status = 'confirmed' WHERE id = ?`,
+    `UPDATE matches SET status = 'confirmed', match_date = NOW() WHERE id = ?`,
     [matchId]
   );
 }
 
   static async rejectMatch(matchId) {
-    await pool.query(`UPDATE matches SET status = 'rejected' WHERE id = ?`, [matchId]);
+    await pool.query(`UPDATE matches SET status = 'rejected', match_date = NOW() WHERE id = ?`, [matchId]);
   }
 
   static async cancelMatch(matchId) {
     await pool.query(`DELETE FROM matches WHERE id = ?`, [matchId]);
   }
+
+static async getrejectedsentmatches(userId) {
+  const [rows] = await pool.query(
+    `
+    SELECT m.*, u.name_account AS opponent_name
+    FROM matches m
+    JOIN users u ON u.id = IF(m.created_by = ?, m.player2_id, m.created_by)
+    WHERE (m.player1_id = ? OR m.player2_id = ?) AND m.status = 'rejected'
+    ORDER BY m.match_date DESC
+    `,
+    [userId, userId, userId]
+  );
+  return rows;
+}
+
+static async resendmatchrequest(matchId){
+    await pool.query(
+      `UPDATE matches SET status = 'pending', match_date = NOW() WHERE id = ?`,
+      [matchId]
+    );
+}
+
+static async cancelrejectedmatch(matchId){
+      await pool.query(
+      `UPDATE matches SET status = 'pending', match_date = NOW() WHERE id = ?`,
+      [matchId]
+    );
+}
 
 }
 
