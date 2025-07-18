@@ -33,7 +33,7 @@ const CreateMatch = async (req, res) => {
 
 const getSentPendingMatches = async (req, res) => {
   try {
-        const userId = req.user.userId;
+    const userId = req.user.userId;
     const matches = await matchModel.getPendingSentMatches(userId);
     res.json({ user: matches });
   } catch (err) {
@@ -118,10 +118,43 @@ const cancelMatch = async (req, res) => {
 
     await matchModel.cancelMatch(matchId);
 
-    return res.json({ message: "تم إلغاء المباراة" });
+    return res.json({ message: "تم إلغاء المباراة بنجاح" });
   } catch (error) {
     console.error("Error canceling match:", error);
     return res.status(500).json({ message: "فشل في إلغاء المباراة" });
+  }
+};
+
+const getRejectedSentMatches = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await matchModel.getrejectedsentmatches(userId);
+    res.json({ user });
+  } catch (err) {
+    console.error("Error fetching rejected matches:", err);
+    res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });
+  }
+};
+
+const resendMatchRequest = async (req, res) => {
+  const matchId = req.params.matchId;
+  try {
+   await matchModel.resendmatchrequest(matchId);
+   return res.json({ message: "تم إعادة إرسال المباراة بنجاح" });
+  } catch (err) {
+    console.error("Error resending match:", err);
+    res.status(500).json({ message: "فشل في إعادة إرسال المباراة" });
+  }
+};
+
+const cancelRejectedMatch = async (req, res) => {
+  const matchId = req.params.id;
+  try {
+   await matchModel.cancelrejectedmatch(matchId);
+   return res.json({ message: "تمت إزالة الرفض بنجاح"});
+  } catch (err) {
+    console.error("Error cancel reject match:", err);
+    res.status(500).json({ message: "فشل في إزالة الرفض" });
   }
 };
 
@@ -132,4 +165,7 @@ module.exports = {
   acceptMatch,
   rejectMatch,
   cancelMatch,
+  getRejectedSentMatches,
+  resendMatchRequest,
+  cancelRejectedMatch
 };

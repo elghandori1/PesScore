@@ -35,10 +35,10 @@ function FriendDetails() {
         <div className="flex justify-between mb-5">
           <div className="flex flex-col justify-center items-start">
             <h2 className="text-lg xs:text-xl sm:text-2xl font-bold text-blue-600 break-words font-almarai">
-             {friend.name_account || "username"}
+             {friend.name_account || "..."}
             </h2>
             <p className="text-xs xs:text-sm text-gray-500 break-all font-almarai">
-              ID: {friend.id_account || "ID"}
+              ID: {friend.id_account || "..."}
             </p>
           </div>
 
