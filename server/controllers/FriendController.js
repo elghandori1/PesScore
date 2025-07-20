@@ -41,12 +41,8 @@ const requestFriend = async (req, res) => {
       return res.status(400).json({ message: 'لا يمكنك إرسال طلب صداقة إلى نفسك' });
     }
 
-    const result = await friendModel.addFriend(receiverId, senderId);
-
-    return res.status(200).json({
-      message: 'تم إرسال طلب الصداقة بنجاح',
-      name: result.name
-    });
+    await friendModel.addFriend(receiverId, senderId);
+    return res.status(200).json({ message: 'تم إرسال طلب الصداقة بنجاح'});
 
   } catch (error) {
     console.error('Request error:', error);
@@ -203,7 +199,7 @@ const CancelRemoveFriend = async (req, res) => {
     if (!userId) return res.status(401).json({ message: 'غير مصرح بالدخول' });
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك إلغاء طلب إزالة نفسك كصديق' });
 
-    const result = await friendModel.cancelRemoveFriend(userId, id);
+    await friendModel.cancelRemoveFriend(userId, id);
     return res.status(200).json({ message: 'تم إلغاء طلب إزالة الصديق بنجاح' });
 
   } catch (error) {
@@ -221,7 +217,7 @@ const AcceptRemoveFriend = async (req, res) => {
     if (!userId) return res.status(401).json({ message: 'غير مصرح بالدخول' });
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك قبول إزالة نفسك كصديق' });
 
-    const result = await friendModel.acceptRemoveFriend(userId, id);
+    await friendModel.acceptRemoveFriend(userId, id);
     return res.status(200).json({ message: 'تم قبول إزالة الصديق بنجاح' });
 
   } catch (error) {
