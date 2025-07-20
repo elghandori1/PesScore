@@ -1,38 +1,42 @@
 const pool = require("../config/db");
 
 class matchModel {
-  static async createMatch({player1_id, player2_id, player1_score, player2_score,created_by,}) 
-  {
-    const connection = await pool.getConnection();
-
-    try {
-     let winner_id = null;
+static async createMatch({ player1_id, player2_id, player1_score, player2_score, created_by }) {
+  const connection = await pool.getConnection();
+  
+  try {
+    let winner_id = null;
     if (player1_score > player2_score) {
       winner_id = player1_id;
     } else if (player2_score > player1_score) {
       winner_id = player2_id;
     }
-      await connection.execute(
-        `
-        INSERT INTO matches
-          (player1_id, player2_id, player1_score, player2_score, winner_id, created_by)
-        VALUES (?, ?, ?, ?, ?, ?)
-      `,
-        [
-          player1_id, player2_id, player1_score,
-          player2_score, winner_id, created_by,
-        ]
-      );
-      connection.release();
-    } catch (err) {
-      connection.release();
-      throw err;
-    } finally {
-    connection.release(); 
-  }
-  }
 
-    static async getPendingSentMatches(userId) {
+    // First insert the match
+    const [result] = await connection.execute(
+      `
+      INSERT INTO matches
+        (player1_id, player2_id, player1_score, player2_score, winner_id, created_by)
+      VALUES (?, ?, ?, ?, ?, ?)
+      `,
+      [player1_id, player2_id, player1_score, player2_score, winner_id, created_by]
+    );
+
+    // Then fetch the newly created match
+    const [matches] = await connection.execute(
+      `SELECT * FROM matches WHERE id = ?`,
+      [result.insertId]
+    );
+
+    return matches[0]; // Return the created match object
+  } catch (err) {
+    throw err;
+  } finally {
+    connection.release();
+  }
+}
+
+  static async getPendingSentMatches(userId) {
     const [rows] = await pool.query(
       `
       SELECT m.*, u.name_account AS opponent_name
@@ -80,16 +84,19 @@ static async acceptMatch(matchId) {
     await pool.query(`DELETE FROM matches WHERE id = ?`, [matchId]);
   }
 
-static async getrejectedsentmatches(userId) {
+static async getrejectedsentmatches(userId) { 
   const [rows] = await pool.query(
-    `
-    SELECT m.*, u.name_account AS opponent_name
-    FROM matches m
-    JOIN users u ON u.id = IF(m.created_by = ?, m.player2_id, m.created_by)
-    WHERE (m.player1_id = ? OR m.player2_id = ?) AND m.status = 'rejected'
-    ORDER BY m.match_date DESC
-    `,
-    [userId, userId, userId]
+`
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = CASE
+        WHEN m.created_by = ? THEN m.player2_id
+        ELSE m.created_by
+      END
+      WHERE (m.player1_id = ? OR m.player2_id = ?) AND m.status = 'rejected'
+      ORDER BY m.match_date DESC
+      `,
+      [userId, userId, userId]
   );
   return rows;
 }

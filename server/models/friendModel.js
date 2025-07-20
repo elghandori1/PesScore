@@ -40,16 +40,10 @@ class friendModel {
         [senderId, receiverId, "pending"]
       );
   
-      const [user] = await connection.query(
-        "SELECT name_account FROM users WHERE id = ?",
-        [senderId]
-      );
-  
-      await connection.commit();
-      return { name: user[0].name_account };
-  
+      connection.commit();
+
     } catch (error) {
-      await connection.rollback();
+      connection.rollback();
       throw error;
     } finally {
       connection.release();
