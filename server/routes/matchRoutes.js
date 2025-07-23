@@ -9,7 +9,12 @@ const { CreateMatch ,
     cancelMatch,
     getRejectedSentMatches,
     resendMatchRequest,
-    cancelRejectedMatch
+    cancelRejectedMatch,
+    getMatchesBetweenFriends,
+    removeMatch,
+    cancelRemoveMatch,
+    acceptRemoveMatch,
+    rejectRemoveMatch
     } = require("../controllers/MatchController");
 
 const authMiddleware = require("../middleware/authMiddleware");
@@ -37,5 +42,14 @@ router.post('/reject/:id', authMiddleware, rejectMatch);
 
 // DELETE /match/cancel/:id
 router.delete('/cancel/:id', authMiddleware, cancelMatch);
+
+router.get('/score/:friendId', authMiddleware, getMatchesBetweenFriends);
+
+router.post('/removematch/:matchId', authMiddleware, removeMatch);
+router.post('/cancelremove/:matchId', authMiddleware, cancelRemoveMatch);
+// Add these new routes
+
+router.post('/acceptremove/:matchId', authMiddleware, acceptRemoveMatch);
+router.post('/rejectremove/:matchId', authMiddleware, rejectRemoveMatch);
 
 module.exports = router;

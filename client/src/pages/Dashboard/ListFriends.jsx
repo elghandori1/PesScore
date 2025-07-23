@@ -4,7 +4,7 @@ import axiosClient from "../../api/axiosClient";
 import { useMessage } from "../../hooks/useMessage";
 import useAuth from "../../auth/useAuth";
 
-function ListFriends() {
+function ListFriends({activeTab}) {
   const [friends, setFriends] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -28,7 +28,7 @@ function ListFriends() {
 
   useEffect(() => {
     getFriends();
-  }, []);
+  }, [activeTab]);
 
   const handleRemoveFriend = async (friendId) => {
     try {
@@ -46,7 +46,9 @@ function ListFriends() {
 
   const handleCancelRemoval = async (friendId) => {
     try {
-      const res = await axiosClient.put(`/friend/cancel-remove-request/${friendId}`);
+      const res = await axiosClient.put(
+        `/friend/cancel-remove-request/${friendId}`
+      );
       showMessage(res.data.message || "تم إلغاء طلب الإزالة", "success");
     } catch (error) {
       showMessage(
@@ -60,7 +62,9 @@ function ListFriends() {
 
   const handleAcceptRemoval = async (friendId) => {
     try {
-      const res = await axiosClient.put(`/friend/accept-remove-request/${friendId}`);
+      const res = await axiosClient.put(
+        `/friend/accept-remove-request/${friendId}`
+      );
       showMessage(res.data.message || "تم قبول إزالة الصديق", "success");
     } catch (error) {
       showMessage(
@@ -74,7 +78,9 @@ function ListFriends() {
 
   const handleRejectRemoval = async (friendId) => {
     try {
-      const res = await axiosClient.put(`/friend/reject-remove-request/${friendId}`);
+      const res = await axiosClient.put(
+        `/friend/reject-remove-request/${friendId}`
+      );
       showMessage(res.data.message || "تم رفض طلب الإزالة", "success");
     } catch (error) {
       showMessage(
@@ -86,13 +92,13 @@ function ListFriends() {
     }
   };
 
-  const filteredFriends = friends.filter(friend =>
+  const filteredFriends = friends.filter((friend) =>
     friend.name_account.toLowerCase().includes(search.toLowerCase())
   );
 
   return (
     <div>
-      {/* Header: Search + Count */}
+
       <div className="flex items-center justify-between mt-3" dir="rtl">
         <div className="text-sm sm:text-base font-almarai text-blue-600">
           عدد الأصدقاء: <b>{friends.length}</b>
@@ -158,7 +164,7 @@ function ListFriends() {
         >
           {filteredFriends.length > 0 ? (
             filteredFriends.map((friend) => (
-              <div to={`/friend-details/${friend.id}`} 
+              <div
                 key={friend.id}
                 className={`flex items-center justify-between p-3 border rounded-lg transition-colors
                 ${
@@ -168,64 +174,99 @@ function ListFriends() {
                 }
               `}
               >
-                <Link to={`/friend-details/${friend.id}`}  className="flex items-center gap-3">
-                  <div className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-blue-100 flex items-center justify-center">
-                    <svg
-                      className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                      />
-                    </svg>
-                  </div>
-                  <div>
-                    <p className="text-sm sm:text-base font-almarai text-gray-800">
-                      {friend.name_account}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 font-almarai">
-                      تمت الإضافة:{" "}
-                      {new Date(friend.created_at).toLocaleDateString()}
-                    </p>
-                    {friend.status === "pending_removal" && (
-                      <p className="text-[10px] sm:text-xs font-almarai mt-1 text-red-600">
-                        {friend.requested_by === user.id
-                          ? "لقد طلبت إزالة هذا الصديق"
-                          : "يريد هذا الصديق إزالتك"}
+                {friend.status === "active" ? (
+                  <Link
+                    to={`/friend-details/${friend.id}`}
+                    className="flex items-center gap-3"
+                  >
+                    <div className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <svg
+                        className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base text-gray-800">
+                        {friend.name_account}
                       </p>
-                    )}
+                      <p className="text-[10px] sm:text-xs text-gray-500">
+                        تمت الإضافة:{" "}
+                        {new Date(friend.created_at).toLocaleDateString()}
+                      </p>
+                      {friend.status === "pending_removal" && (
+                        <p className="text-[10px] sm:text-xs mt-1 text-red-600">
+                          {friend.requested_by === user.id
+                            ? "لقد طلبت إزالة هذا الصديق"
+                            : "يريد هذا الصديق إزالتك"}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                ) : (
+                  <div className="flex items-center gap-3 cursor-not-allowed opacity-70">
+                    <div className="flex-shrink-0 h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                      <svg
+                        className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                        />
+                      </svg>
+                    </div>
+                    <div>
+                      <p className="text-sm sm:text-base text-gray-800">
+                        {friend.name_account}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-500">
+                        تمت الإضافة:{" "}
+                        {new Date(friend.created_at).toLocaleDateString()}
+                      </p>
+                      {friend.status === "pending_removal" && (
+                        <p className="text-[10px] sm:text-xs mt-1 text-red-600">
+                          {friend.requested_by === user.id
+                            ? "لقد طلبت إزالة هذا الصديق"
+                            : "يريد هذا الصديق إزالتك"}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </Link>
+                )}
 
                 {/* Action Buttons */}
                 {friend.status === "pending_removal" ? (
                   friend.requested_by === user.id ? (
                     <button
                       onClick={() => handleCancelRemoval(friend.id)}
-                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none font-almarai"
+                      className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none"
                     >
                       إلغاء
                     </button>
                   ) : (
                     <div className="flex flex-row gap-1 sm:mt-0">
                       <button
-                          onClick={
-                            () => handleAcceptRemoval(friend.id)
-                          }
-                          className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none font-almarai"
-                        >
+                        onClick={() => handleAcceptRemoval(friend.id)}
+                        className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none"
+                      >
                         قبول
                       </button>
                       <button
-                       onClick={(e) =>
-                        handleRejectRemoval(friend.id)
-                      }
-                        className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none font-almarai"
+                        onClick={() => handleRejectRemoval(friend.id)}
+                        className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full shadow-sm text-white bg-gray-600 hover:bg-gray-700 focus:outline-none"
                       >
                         رفض
                       </button>
@@ -234,7 +275,7 @@ function ListFriends() {
                 ) : (
                   <button
                     onClick={() => handleRemoveFriend(friend.id)}
-                    className="text-red-500 text-xs sm:text-sm hover:underline font-almarai"
+                    className="text-red-500 text-xs sm:text-sm hover:underline"
                   >
                     إزالة
                   </button>
@@ -242,9 +283,25 @@ function ListFriends() {
               </div>
             ))
           ) : (
-            <p className="text-center text-gray-500 font-almarai">
-              لا يوجد أصدقاء.
-            </p>
+             <div className="text-center py-6 xs:py-8">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8 xs:h-12 xs:w-12 mx-auto text-gray-400"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+          <h3 className="mt-2 text-base xs:text-lg font-medium text-gray-900 font-almarai">
+            لا توجد أصدقاء
+          </h3>
+        </div>
           )}
         </div>
       )}

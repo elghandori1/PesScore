@@ -212,7 +212,6 @@ static async cancelRemoveFriend(userId, friendId) {
   }
 }
 
-// Accept a remove friend request
 static async acceptRemoveFriend(userId, friendId) {
   const connection = await pool.getConnection();
   try {
@@ -230,13 +229,19 @@ static async acceptRemoveFriend(userId, friendId) {
       throw { message: 'لا يوجد طلب إزالة صداقة قيد الانتظار' };
     }
 
+    await connection.execute(
+      `DELETE FROM matches 
+       WHERE (player1_id = ? AND player2_id = ?) 
+          OR (player1_id = ? AND player2_id = ?)`,
+      [userId, friendId, friendId, userId]
+    );
+
     await connection.query(
       'DELETE FROM friendships WHERE id = ?',
       [friendship[0].id]
     );
 
     await connection.commit();
-    return { id: friendship[0].id };
   } catch (error) {
     await connection.rollback();
     throw error;
@@ -263,7 +268,6 @@ static async rejectRemoveFriend(userId, friendId) {
       throw { message: 'لا يوجد طلب إزالة صداقة قيد الانتظار' };
     }
 
-    // Optional: keep friendship but mark it active again (alternative to deleting)
     await connection.query(
       'UPDATE friendships SET status = "active", requested_by = NULL WHERE id = ?',
       [friendship[0].id]

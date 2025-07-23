@@ -83,7 +83,7 @@ function FriendDetails() {
         </nav>
         <hr className="border-gray-300 mx-auto" />
         {/* Tab Content */}
-        {activeTab === "matches" ? <MatchesTab/> : <PendingMatch />}
+        {activeTab === "matches" ? <MatchesTab id_friend={id}/> : <PendingMatch />}
       </section>
     </main>
   );

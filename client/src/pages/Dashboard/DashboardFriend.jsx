@@ -67,7 +67,7 @@ function DashboardFriend() {
         <hr className="border-gray-300 mx-auto" />
 
         {/* Pending Tab Content */}
-        {activeTab === "friends" ? <ListFriends/> : <PendingFriends/> }
+        {activeTab === "friends" ? <ListFriends activeTab={activeTab}/> : <PendingFriends/> }
       </section>
     </main>
   );
