@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
 import useAuth from "../../auth/useAuth";
-import useSocket from "../../hooks/useSocket";
 
 const PendingMatch = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -12,7 +11,7 @@ const PendingMatch = () => {
   const [sentMatch, setSentMatch] = useState([]);
   const [receivedMatch, setReceivedMatch] = useState([]);
   const [rejectedMatch, setRejectedMatch] = useState([]);
-  const socketRef = useSocket(user?.id);
+  
   const fetchMatch = async () => {
     setIsLoading(true);
     try {
@@ -37,47 +36,7 @@ const PendingMatch = () => {
 
   useEffect(() => {
     fetchMatch();
-  }, []);
-
-useEffect(() => {
-  if (!socketRef.current) return;
-
-  socketRef.current.on("matchAccepted", (data) => {
-    showMessage(data.message, "success");
-    fetchMatch(); // Refresh data in real-time
-  });
-
-  socketRef.current.on("matchRejected", () => {
-    fetchMatch(); // Refresh data in real-time
-  });
-
-  socketRef.current.on("matchCanceled", () => {
-    fetchMatch(); // Refresh data in real-time
-  });
-
-    socketRef.current.on("matchResent", () => {
-    fetchMatch(); // Refresh data
-  });
-
-  socketRef.current.on("rejectedMatchCanceled", () => {
-    fetchMatch(); // Refresh data
-  });
-
-    socketRef.current.on("newMatchRequest", () => {
-    fetchMatch(); // Refresh the matches list
-  });
-
-  return () => {
-    socketRef.current.off("matchAccepted");
-    socketRef.current.off("matchRejected");
-    socketRef.current.off("matchCanceled");
-    socketRef.current.off("matchResent");
-    socketRef.current.off("rejectedMatchCanceled");
-    socketRef.current.off("newMatchRequest");
-  };
-}, [socketRef]);
-
-
+  }, [activeTab]); 
 
   const handleAcceptMatch = async (matchId) => {
     setIsLoading(true);
@@ -305,7 +264,7 @@ useEffect(() => {
   return (
     <div className="w-full mt-3 rounded-lg overflow-hidden border border-gray-300 bg-white shadow-sm">
       {/* Tabs */}
-      <div className="flex w-full text-center text-sm sm:text-base font-almarai">
+      <div className="flex w-full text-center text-sm sm:text-base">
         {["received", "sent", "rejected"].map((tab) => (
           <button
             key={tab}

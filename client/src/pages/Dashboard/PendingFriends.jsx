@@ -33,7 +33,7 @@ function PendingFriends() {
 
   useEffect(() => {
     fetchRequests();
-  }, []);
+  }, [activeTab]);
 
   const handleCancelRequest = async (requestId) => {
     clearMessage();

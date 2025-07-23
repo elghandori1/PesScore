@@ -115,6 +115,83 @@ static async cancelrejectedmatch(matchId){
     );
 }
 
+static async getMatchesBetweenUsers(userId, friendId) {
+  const sql = `
+    SELECT 
+      m.id, m.player1_id, m.player2_id, 
+      m.player1_score, m.player2_score,
+      m.status, m.match_date, m.created_by,
+      m.removed, m.removal_requested_by,
+      u1.name_account AS player1_name,
+      u2.name_account AS player2_name
+    FROM matches m
+    JOIN users u1 ON m.player1_id = u1.id
+    JOIN users u2 ON m.player2_id = u2.id
+    WHERE ((m.player1_id = ? AND m.player2_id = ?) 
+       OR (m.player1_id = ? AND m.player2_id = ?))
+       AND m.status = 'confirmed'
+    ORDER BY m.match_date DESC
+  `;
+  const [rows] = await pool.query(sql, [
+    userId, friendId, friendId, userId
+  ]);
+  return rows;
+}
+
+static async removematche(matchId, userId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(
+      `UPDATE matches 
+       SET removed = 'pending_remove', 
+           removal_requested_by = ? 
+       WHERE id = ? AND removed = 'no'`,
+      [userId, matchId]
+    );
+  } finally {
+    connection.release();
+  }
+}
+
+static async acceptRemoveMatch(matchId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(
+      `DELETE FROM matches WHERE id = ? AND removed = 'pending_remove'`,
+      [matchId]
+    );
+  } finally {
+    connection.release();
+  }
+}
+
+static async rejectRemoveMatch(matchId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(
+      `UPDATE matches 
+       SET removed = 'no', 
+           removal_requested_by = NULL 
+       WHERE id = ? AND removed = 'pending_remove'`,
+      [matchId]
+    );
+  } finally {
+    connection.release();
+  }
+}
+
+static async cancelRemoveMatch(matchId) {
+  const connection = await pool.getConnection();
+  try {
+    await connection.query(
+      `UPDATE matches SET removed = 'no' WHERE id = ? AND removed = 'pending_remove'`,
+      [matchId]
+    );
+  } finally {
+    connection.release();
+  }
+}
+
 }
 
 module.exports = matchModel;
