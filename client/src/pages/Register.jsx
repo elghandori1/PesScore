@@ -35,7 +35,7 @@ const Register = () => {
   };
 
   return (
-    <main className="px-2 xs:px-3 sm:px-4 py-4" dir="rtl">
+    <main className="px-2 xs:px-3 sm:px-4 py-4 mt-2" dir="rtl">
       <section className="bg-white p-3 sm:p-4 md:p-6 rounded-lg shadow-md w-full max-w-md mx-auto">
         <div className="text-center mb-4">
           <h2 className="text-xl sm:text-2xl font-bold text-blue-700 mb-1">

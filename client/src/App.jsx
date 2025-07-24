@@ -23,12 +23,12 @@ function App()
   return (
     <Router>
       <AuthProvider>
-      <MessageProvider> 
+    <MessageProvider> 
         <div className="min-h-screen flex flex-col">
           <div className="app-background fixed inset-0 -z-10" />
           <WelcomeMessage />
           <Navbar />
-          <main className="flex-grow mt-14 px-2 xs:px-3 sm:px-4 md:px-6">
+          <main className="flex-grow mt-8 px-1">
             <Routes>
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/login" element={<PublicRoute><div dir="rtl"><Login /></div></PublicRoute>} />
@@ -41,7 +41,7 @@ function App()
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-          <Footer />
+         <Footer />
         </div>
         </MessageProvider>
       </AuthProvider>
