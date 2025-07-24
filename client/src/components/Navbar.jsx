@@ -6,7 +6,7 @@ const Navbar = () => {
   const location = useLocation();
 
   return (
-    <header className="w-full flex justify-between items-center px-3 sm:px-4 py-2 sm:py-3 text-white fixed z-10 bg-black/60 backdrop-blur-md">
+    <header className="w-full flex  justify-between items-center px-3 sm:px-4 py-2 sm:py-3 text-white fixed z-10 bg-black/60 backdrop-blur-md">
       <Link to="/">
         <h1 className="text-lg sm:text-xl md:text-2xl font-bold">PesScore</h1>
       </Link>
