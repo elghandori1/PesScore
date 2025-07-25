@@ -193,7 +193,7 @@ const AddFriend = () => {
           {pendingRequests.map((request) => (
             <div
               key={request.id}
-              className="flex justify-between items-start bg-red-50 p-3 rounded-lg"
+              className="flex justify-between items-start bg-red-100 p-3 rounded-lg"
             >
               <div>
                 <p className="font-medium text-sm">

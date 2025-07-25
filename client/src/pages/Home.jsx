@@ -14,10 +14,10 @@ const Home = () => {
     <h2 className="text-xl mb-2 text-blue-600 font-semibold">
       PesScore
     </h2>
-  <p
-          className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed"
-          dir="ltr"
-        >
+    <p
+      className="text-gray-800 text-sm xs:text-base sm:text-lg leading-relaxed"
+      dir="ltr"
+    >
           مرحباً بك في موقع <b className="text-blue-600">بيس سكور</b> حيث يمكنك
           حفظ سجلات المباريات بينك وبين أصدقائك بسهولة. ابدأ الآن واستمتع بتجربة
           اللعب مع أصدقائك وحفظ نتائج مبارياتك
