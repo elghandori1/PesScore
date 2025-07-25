@@ -47,7 +47,7 @@ function NewScore(){
     showMessage("تم حفظ المباراة بنجاح",'success');
     setTimeout(()=>{
         navigate(`/friend-details/${id}`)
-    }, 2000)
+    }, 1000)
   } catch (error) {
     console.error(error);
     showMessage("حدث خطأ أثناء حفظ المباراة",'error');

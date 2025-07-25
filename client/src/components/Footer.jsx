@@ -1,6 +1,10 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 const Footer = () => {
+   const location = useLocation();
+   if (location.pathname === '/Developer') {
+    return null;
+  }
   return (
     <footer className="fixed bottom-0 w-full bg-blue-800 text-white py-2 sm:py-3 text-center">
       <div className="max-w-4xl mx-auto px-4">

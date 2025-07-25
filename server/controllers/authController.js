@@ -22,6 +22,15 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' });
     }
 
+  if (id_account.length !== 16) {
+    return res.status(400).json({ message: 'معرف الحساب يجب أن يكون 16 حرفاً بصيغة XXXX-DDD-DDD-DDD' });
+   }
+
+   const idAccountRegex = /^[A-Z]{4}-\d{3}-\d{3}-\d{3}$/;
+   if (!idAccountRegex.test(id_account)) {
+    return res.status(400).json({ message: 'صيغة معرف الحساب غير صحيحة. الصيغة المطلوبة: XXXX-DDD-DDD-DDD' });
+   }
+
     const existingUser = await AuthModel.findByID_Compte(id_account);
     if (existingUser) {
       return res.status(400).json({ message: 'معرف المستخدم مستخدم مسبقًا' });

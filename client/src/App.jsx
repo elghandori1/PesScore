@@ -17,12 +17,13 @@ import AddFriend from './pages/AddFriend';
 import DashboardFriend from './pages/Dashboard/DashboardFriend';
 import FriendDetails from './pages/FriendDetails/FriendDetails';
 import NewScore from './pages/FriendDetails/NewScore';
+import Developer from './pages/Developer';
 
 function App()
 {
   return (
     <Router>
-      <AuthProvider>
+    <AuthProvider>
     <MessageProvider> 
         <div className="min-h-screen flex flex-col">
           <div className="app-background fixed inset-0 -z-10" />
@@ -38,10 +39,11 @@ function App()
               <Route path="/Dashboard-Friend" element={<ProtectedRoute><DashboardFriend/></ProtectedRoute>} />
               <Route path="/friend-details/:id" element={<ProtectedRoute><FriendDetails/></ProtectedRoute>} />
               <Route path="/matchscore/:id" element={<ProtectedRoute><NewScore/></ProtectedRoute>} />
+              <Route path="/Developer" element={<ProtectedRoute><Developer/></ProtectedRoute>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
-         <Footer />
+         <Footer/>
         </div>
         </MessageProvider>
       </AuthProvider>
