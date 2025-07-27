@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axiosClient from "../api/axiosClient";
 import { useMessage } from "../hooks/useMessage";
+import useAuth from "../auth/useAuth";
 
 const AddFriend = () => {
   const [search, setSearch] = useState("");
@@ -8,9 +9,9 @@ const AddFriend = () => {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
+  const { user } = useAuth();
   const { showMessage, clearMessage } = useMessage();
-
+ if (!user) return null;
   const handleSearch = async () => {
     if (!search.trim()) {
       showMessage("الرجاء إدخال اسم أو معرف اللعبة للبحث", "error");
@@ -36,10 +37,8 @@ const AddFriend = () => {
     }
   };
 
-  useEffect(() => {
     const fetchPendingRequests = async () => {
       setLoading(true);
-      clearMessage();
       try {
         const res = await axiosClient.get("/friend/pending");
         setPendingRequests(res.data.user || []);
@@ -52,6 +51,8 @@ const AddFriend = () => {
         setLoading(false);
       }
     };
+
+  useEffect(() => {
     fetchPendingRequests();
   }, []);
 
@@ -65,8 +66,7 @@ const AddFriend = () => {
       setHasSearched(false);
       setUsers(users.filter((user) => user.id !== receiverId));
       setSearch("");
-      const pendingRes = await axiosClient.get("/friend/pending");
-      setPendingRequests(pendingRes.data.user || []);
+      await fetchPendingRequests();
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء إرسال طلب الصداقة",

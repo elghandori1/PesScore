@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
-import useAuth from "../../auth/useAuth";
+import useAuth from "../../auth/useAuth";;
 
-const PendingMatch = () => {
+const PendingMatch = ({id_friend, setHasNotifications}) => {
   const [isLoading, setIsLoading] = useState(false);
   const { showMessage, clearMessage } = useMessage();
   const { user } = useAuth();
@@ -11,7 +11,7 @@ const PendingMatch = () => {
   const [sentMatch, setSentMatch] = useState([]);
   const [receivedMatch, setReceivedMatch] = useState([]);
   const [rejectedMatch, setRejectedMatch] = useState([]);
-  
+
   const fetchMatch = async () => {
     setIsLoading(true);
     try {
@@ -24,6 +24,16 @@ const PendingMatch = () => {
       setReceivedMatch(receivedRes.data.user || []);
       setSentMatch(sentRes.data.user || []);
       setRejectedMatch(rejectRes.data.user || []);
+        const hasPending = (receivedRes.data.user || []).length > 0;
+        const hasRejected = (rejectRes.data.user || []).some(match => {
+        const isCurrentUserCreator = match.created_by == user.id;
+        const isFriendPlayer = match.player1_id == id_friend || match.player2_id == id_friend;
+        const isRejected = match.status === 'rejected';
+        return isCurrentUserCreator && isFriendPlayer && isRejected;
+      });
+       if (setHasNotifications) {
+        setHasNotifications(hasPending || hasRejected);
+      }
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء جلب الطلبات",
@@ -38,13 +48,19 @@ const PendingMatch = () => {
     fetchMatch();
   }, [activeTab]); 
 
+
   const handleAcceptMatch = async (matchId) => {
     setIsLoading(true);
     clearMessage();
     try {
       const response = await axiosClient.post(`/match/accept/${matchId}`);
       showMessage(response.data.message || "تم قبول المباراة", "success");
-      fetchMatch();
+      await fetchMatch();
+      
+      // Hide notification dot when accepting
+      if (setHasNotifications) {
+        setHasNotifications(false);
+      }
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء القبول",
@@ -61,7 +77,12 @@ const PendingMatch = () => {
     try {
       const response = await axiosClient.post(`/match/reject/${matchId}`);
       showMessage(response.data.message || "تم رفض المباراة", "success");
-      fetchMatch();
+       await fetchMatch();
+      
+      // Hide notification dot when accepting
+      if (setHasNotifications) {
+        setHasNotifications(false);
+      }
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء الرفض",
@@ -78,7 +99,12 @@ const PendingMatch = () => {
     try {
       const response = await axiosClient.delete(`/match/cancel/${matchId}`);
       showMessage(response.data.message || "تم إلغاء المباراة", "success");
-      fetchMatch();
+        await fetchMatch();
+      
+      // Hide notification dot when accepting
+      if (setHasNotifications) {
+        setHasNotifications(false);
+      }
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء الإلغاء",
@@ -98,7 +124,11 @@ const PendingMatch = () => {
         response.data.message || "تمت إعادة الإرسال بنجاح",
         "success"
       );
-      fetchMatch();
+      await fetchMatch();
+      
+      if (setHasNotifications) {
+        setHasNotifications(false);
+      }
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء إعادة الإرسال",
@@ -117,7 +147,7 @@ const PendingMatch = () => {
         `/match/cancel-reject/${matchId}`
       );
       showMessage(response.data.message || "تمت إزالة الرفض بنجاح", "success");
-      fetchMatch(); // Refresh data
+      await fetchMatch();
     } catch (err) {
       showMessage(
         err.response?.data?.message || "حدث خطأ أثناء إزالة الرفض",

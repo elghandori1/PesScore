@@ -1,10 +1,41 @@
 import { Link } from "react-router-dom";
+import {useState, useEffect} from "react"
 import useAuth from "../auth/useAuth";
+import axiosClient from "../api/axiosClient";
 import { useMessage } from "../hooks/useMessage";
 
 const Home = () => {
   const { user } = useAuth();
   const { clearMessage } = useMessage();
+  const [hasNotifications, setHasNotifications] = useState(false);
+
+   useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        // Get pending friend requests
+        const friendRes = await axiosClient.get("/friend/received");
+        const pendingFriends = friendRes.data.user;
+
+        // Get pending matches
+        const matchesRes = await axiosClient.get("/match/received");
+        const pendingMatches = matchesRes.data.user;
+
+        // Set notification if there are any pending requests
+        setHasNotifications(
+          (pendingFriends && pendingFriends.length > 0) || 
+          (pendingMatches && pendingMatches.length > 0)
+        );
+      } catch (error) {
+        console.error("Error checking notifications:", error);
+      }
+    };
+
+    // Check for notifications when component mounts
+    if (user) {
+      checkNotifications();
+    }
+  }, [user]);
+
   clearMessage();
   if (!user) return null;
 
@@ -43,8 +74,11 @@ const Home = () => {
 
     <Link
       to="/Dashboard-Friend"
-      className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center flex-1 transition"
+      className="bg-blue-600 hover:bg-blue-700 text-white p-4 rounded-lg text-center flex-1 transition  relative"
     >
+           {hasNotifications && (
+       <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+        )}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="h-8 w-8 mx-auto mb-1"

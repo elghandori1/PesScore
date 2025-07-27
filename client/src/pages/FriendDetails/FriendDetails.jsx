@@ -4,10 +4,14 @@ import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
 import MatchesTab from './MatchesTab';
 import PendingMatch from './PendingMatch'
+import useAuth from "../../auth/useAuth";
 
 function FriendDetails() {
   const { id } = useParams();
   const [friend, setFriend] = useState({});
+  const { user } = useAuth();
+  const [hasNotifications, setHasNotifications] = useState(false);
+  const [removedScore, setRemovedScore] = useState(false);
   const [activeTab, setActiveTab] = useState("matches");
   const { showMessage } = useMessage();
 
@@ -25,7 +29,47 @@ function FriendDetails() {
 
   useEffect(() => {
     fetchFriend();
-  }, [id]);
+  }, [id, activeTab]);
+
+useEffect(() => {
+  const checkNotifications = async () => {
+    try {
+      const [pendRes, rejectRes, friendRes] = await Promise.all([
+        axiosClient.get("/match/received"),
+        axiosClient.get("/match/rejected"),
+        axiosClient.get(`/match/score/${id}`),
+      ]);
+      const pendingMatches = pendRes.data.user || [];
+      const rejectedMatches = rejectRes.data.user || [];
+      const friendMatches = friendRes.data.matches || [];
+       const hasPendingRemoval = friendMatches.some(match => {
+          return match.removed === 'pending_remove' && 
+                 match.removal_requested_by != user.id;
+        });
+        
+        setRemovedScore(hasPendingRemoval);
+
+      const hasPending = pendingMatches.some(match => match.player1_id == id);
+      const hasRejected = rejectedMatches.some(match => {
+        const isCurrentUserCreator = match.created_by == user.id;
+        const isFriendPlayer = match.player1_id == id || match.player2_id == id;
+        const isRejected = match.status === 'rejected';
+        
+        return isCurrentUserCreator && isFriendPlayer && isRejected;
+      });
+
+      setHasNotifications(hasPending || hasRejected);
+       
+    } catch (error) {
+      console.error("Error checking notifications:", error);
+    }
+  };
+
+  if (user && id) {
+    checkNotifications();
+  }
+}, [user, id, activeTab]);
+
 
   return (
  <main className="flex flex-col items-center w-full px-3 pt-10 pb-14">
@@ -65,6 +109,9 @@ function FriendDetails() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         المعلقة
+{hasNotifications && (
+    <span className="ml-1 inline-block w-2 h-2 bg-red-500 rounded-full"></span>
+  )}  
       </button>
 
       <button
@@ -79,11 +126,14 @@ function FriendDetails() {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
         </svg>
         المباريات
+   {removedScore && (
+  <span className="ml-1 inline-block w-2 h-2 bg-orange-500 rounded-full"></span>
+)}
       </button>
     </nav>
 
     {/* Tab Content */}
-    {activeTab === "matches" ? <MatchesTab id_friend={id}/> : <PendingMatch />}
+    {activeTab === "matches" ? <MatchesTab setRemovedScore={setRemovedScore} id_friend={id}/> : <PendingMatch setHasNotifications={setHasNotifications} id_friend={id} />}
   </section>
 </main>
   );
