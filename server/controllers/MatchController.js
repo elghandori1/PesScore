@@ -15,7 +15,8 @@ const CreateMatch = async (req, res) => {
    ) {
   return res.status(400).json({ message: "جميع الحقول مطلوبة" });
    }
-    // Create the match
+
+   // Create the match
    await matchModel.createMatch({
       player1_id,
       player2_id,
@@ -23,7 +24,8 @@ const CreateMatch = async (req, res) => {
       player2_score,
       created_by: userId,
     });
-
+    
+ 
     return res.status(201).json({ message: "تم إنشاء المباراة بنجاح" });
   } catch (error) {
     console.error("Error creating match:", error);
@@ -36,7 +38,7 @@ const getSentPendingMatches = async (req, res) => {
     const userId = req.user.userId;
     const matches = await matchModel.getPendingSentMatches(userId);
     if(matches){
-      return res.json({ user: matches });
+      return res.json({ user: matches || []});
     }
   } catch (err) {
     console.error("Error fetching sent matches:", err);
@@ -118,7 +120,6 @@ const cancelMatch = async (req, res) => {
     }
 
     await matchModel.cancelMatch(matchId);
-    return res.json({ message: "تم إلغاء المباراة بنجاح" });
   } catch (error) {
     console.error("Error canceling match:", error);
     return res.status(500).json({ message: "فشل في إلغاء المباراة" });
@@ -156,7 +157,6 @@ const resendMatchRequest = async (req, res) => {
     }
     
    await matchModel.resendmatchrequest(matchId);
-
    return res.json({ message: "تم إعادة إرسال المباراة بنجاح" });
   } catch (err) {
     console.error("Error resending match:", err);

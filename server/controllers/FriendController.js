@@ -50,7 +50,6 @@ const requestFriend = async (req, res) => {
   }
 };
 
-
 const PendingRequests = async (req, res) => {
   try {
     const userId = req.user.userId;

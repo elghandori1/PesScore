@@ -1,11 +1,35 @@
-import {useState}  from "react";
+import {useState,useEffect}  from "react";
+import useAuth from "../../auth/useAuth";
+import axiosClient from "../../api/axiosClient";
 import PendingFriends from "./PendingFriends";
 import ListFriends from "./ListFriends";
-function DashboardFriend() {
-  const [activeTab, setActiveTab] = useState("friends");
-  const handleTabSwitch = (tab) => setActiveTab(tab);
 
-  return (
+function DashboardFriend() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState("friends");
+  const [pendingRequests, setPendingRequests] = useState([]);
+  const handleTabSwitch = (tab) => setActiveTab(tab);
+ 
+    useEffect(() => {
+    const checkNotifications = async () => {
+      try {
+        const friendRes = await axiosClient.get("/friend/received");
+        const pendingFriends = friendRes.data.user;
+        setPendingRequests(pendingFriends || []);
+      } catch (error) {
+        console.error("Error checking notifications:", error);
+      }
+    };
+    if (user) {
+      checkNotifications();
+    }
+  }, [user]);
+
+  const handleRequestsUpdate = (updatedRequests) => {
+    setPendingRequests(updatedRequests);
+  };
+
+return (
 <main className="flex flex-col items-center w-full px-3 pt-10 pb-14">
   <section className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow w-full max-w-md mx-auto">
     <div className="text-center mb-2">
@@ -24,10 +48,13 @@ function DashboardFriend() {
         }`}
         onClick={() => handleTabSwitch("pending")}
       >
-        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
           <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2h-1V9z" clipRule="evenodd" />
         </svg>
         المعلقة
+        {pendingRequests.length > 0 && (
+              <span className="ml-1 inline-block w-2 h-2 sm:w-2 sm:h-2 bg-red-500 rounded-full"></span>
+            )}
       </button>
 
       <button
@@ -44,9 +71,9 @@ function DashboardFriend() {
         الأصدقاء
       </button>
     </nav>
-
+    
     {/* Tab Content */}
-    {activeTab === "friends" ? <ListFriends activeTab={activeTab}/> : <PendingFriends/> }
+    {activeTab === "friends" ? <ListFriends activeTab={activeTab}/> : <PendingFriends onRequestsUpdate={handleRequestsUpdate}/> }
   </section>
 </main>
   );

@@ -49,9 +49,8 @@ class friendModel {
       connection.release();
     }
   }
-  
 
-  static async pending_requests(userId) {
+  static async pending_requests(userId) { 
     const [user] = await pool.query(
       `SELECT fr.id, fr.receiver_id, u.name_account, id_account ,u.created_at
       FROM friend_requests fr

@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useMessage } from "../../hooks/useMessage";
 import axiosClient from "../../api/axiosClient";
 
-function PendingFriends() {
+function PendingFriends({onRequestsUpdate}) {
   const [activeTab, setActiveTab] = useState("received");
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
@@ -49,26 +49,35 @@ function PendingFriends() {
     }
   };
 
-  const handleAcceptRequest = async (requestId) => {
+const handleAcceptRequest = async (requestId) => {
     clearMessage();
     try {
-     const res= await axiosClient.post(`/friend/accept-request/${requestId}`);
-     setReceivedRequests((prev) => prev.filter((r) => r.id !== requestId));
-     showMessage(res.data.message || "تم قبول طلب الصداقة بنجاح", "success");
+      const res = await axiosClient.post(`/friend/accept-request/${requestId}`);
+      setReceivedRequests((prev) => {
+        const updated = prev.filter((r) => r.id !== requestId);
+        // Notify parent component about the update
+        onRequestsUpdate(updated);
+        return updated;
+      });
+      showMessage(res.data.message || "تم قبول طلب الصداقة بنجاح", "success");
     } catch (error) {
       showMessage(
         error.response?.data?.message || "حدث خطأ أثناء قبول طلب الصداقة",
         "error"
       );
-      console.error("Error accepting request:", error);
     }
   };
 
-  const handleRejectRequest = async (requestId)=>{
+  const handleRejectRequest = async (requestId) => {
     clearMessage();
     try {
-     await axiosClient.delete(`/friend/reject-request/${requestId}`);
-      setReceivedRequests((prev) => prev.filter((r) => r.id !== requestId));
+      await axiosClient.delete(`/friend/reject-request/${requestId}`);
+      setReceivedRequests((prev) => {
+        const updated = prev.filter((r) => r.id !== requestId);
+        // Notify parent component about the update
+        onRequestsUpdate(updated);
+        return updated;
+      });
       showMessage("تم رفض طلب الصداقة بنجاح", "success");
     } catch (error) {
       showMessage(
@@ -76,7 +85,7 @@ function PendingFriends() {
         "error"
       );
     }
-  }
+  };
 
 const renderRequestItem = (request, isReceived) => (
   <div

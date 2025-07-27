@@ -23,7 +23,7 @@ const calculateStats = (matches, userId) => {
   }, { wins: 0, draws: 0, losses: 0 });
 };
 
-const MatchesTab = ({ id_friend }) => {
+const MatchesTab = ({ id_friend, setRemovedScore }) => {
   const [matches, setMatches] = useState([]);
   const [loading, setLoading] = useState(true);
   const { showMessage } = useMessage();
@@ -51,6 +51,7 @@ const MatchesTab = ({ id_friend }) => {
       const res = await axiosClient.post(`/match/removematch/${matchId}`);
       showMessage(res.data.message || "تم إلغاء المباراة", "success");
       await fetchMatches();
+  
     } catch (error) {
       console.error("Error canceling match:", error);
       showMessage("فشل في إلغاء المباراة", "error");
@@ -63,6 +64,9 @@ const MatchesTab = ({ id_friend }) => {
       if (res.data) {
         showMessage(res.data.message || "تم قبول إزالة المباراة", "success");
         await fetchMatches();
+        if(setRemovedScore){
+        setRemovedScore(false);
+      }
       }
     } catch (error) {
       console.error("Error accepting remove:", error);
@@ -76,6 +80,9 @@ const MatchesTab = ({ id_friend }) => {
       if (res.data) {
         showMessage(res.data.message || "تم رفض إزالة المباراة", "success");
         await fetchMatches();
+        if(setRemovedScore){
+        setRemovedScore(false);
+      }
       }
     } catch (error) {
       console.error("Error rejecting remove:", error);
@@ -88,6 +95,7 @@ const MatchesTab = ({ id_friend }) => {
       const res = await axiosClient.post(`/match/cancelremove/${matchId}`);
       showMessage(res.data.message || "تم إلغاء المباراة", "success");
       await fetchMatches();
+
     } catch (error) {
       console.error("Error canceling match:", error);
       showMessage("فشل في إلغاء المباراة", "error");
