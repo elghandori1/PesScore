@@ -70,7 +70,11 @@ useEffect(() => {
   }
 }, [user, id, activeTab]);
 
-
+  const truncateName = (name, length = 18) => {
+    if (!name) return "";
+    return name.length > length ? name.slice(0, length)+ ".." : name;
+  };
+  
   return (
  <main className="flex flex-col items-center w-full px-3 pt-10 pb-14">
   <section className="bg-white/90 backdrop-blur-sm p-4 rounded-lg shadow w-full max-w-md mx-auto">
@@ -79,7 +83,7 @@ useEffect(() => {
     <div className="flex justify-between mb-4">
       <div className="flex flex-col justify-center items-start">
         <h2 className="text-lg font-bold text-blue-600 break-words">
-         {friend.name_account || "..."}
+         { truncateName(friend.name_account) || "..."}
         </h2>
         <p className="text-xs text-gray-500 break-all">
           ID: {friend.id_account || "..."}

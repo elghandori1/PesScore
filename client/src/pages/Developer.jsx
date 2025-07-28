@@ -1,23 +1,26 @@
 import React from "react";
 import { FaDiscord, FaXTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa6";
+import { useNavigate } from "react-router-dom";
 
 function Developer() {
-
+const navigate = useNavigate();
   return (
     <div className="flex flex-col items-center mt-8 px-4 py-2 z-20">
       <div className="text-gray-300 text-sm sm:text-base text-center max-w-md mb-4 bg-blue-700 p-4 rounded-lg">
         تم تطوير هذا الموقع بواسطة محمد الغنضوري. إذا واجهت أي مشاكل أو كانت لديك أفكار لإضافات جديدة، لا تتردد في التواصل معي
       </div>
-      <div className="bg-gray-800 rounded-lg shadow-xl p-4 sm:p-8 w-full sm:max-w-md border border-gray-700 ">
-       
-        <div className="flex flex-col items-center">
+       <div className="relative bg-gray-800 rounded-lg shadow-xl p-4 sm:p-8 w-full sm:max-w-md border border-gray-700">
+    
+   <button
+      onClick={() => navigate('/')}
+      className="absolute top-2 left-2 sm:top-4 sm:left-4 px-3 py-1 sm:px-4 sm:py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base"
+    >
+      ← رجوع
+    </button>
+      <div className="flex flex-col items-center mt-10">
+      <div className="w-full space-y-2 sm:space-y-3">
 
-          <div className="w-full space-y-2 sm:space-y-3">
-            {/* <a href="https://web.whatsapp.com" 
-               className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base">
-              <FaWhatsapp className="text-gray-300" />
-              <span className="text-gray-300">07</span>
-            </a> */}
+         
 
             <a href="https://discord.com" 
                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base">

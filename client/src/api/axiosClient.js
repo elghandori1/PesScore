@@ -2,9 +2,10 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
-  withCredentials: true, // To send cookies
+  withCredentials: true,
   headers: {
-    'Content-Type': 'application/json',
+       'Content-Type': 'application/json',
+       'Accept': 'application/json',
   },
 });
 

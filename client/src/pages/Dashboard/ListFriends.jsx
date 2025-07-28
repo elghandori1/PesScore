@@ -128,6 +128,11 @@ function ListFriends({ activeTab }) {
     friend.name_account.toLowerCase().includes(search.toLowerCase())
   );
 
+    const truncateName = (name, length = 18) => {
+    if (!name) return "";
+    return name.length > length ? name.slice(0, length)+ ".." : name;
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mt-3" dir="rtl">
@@ -258,7 +263,7 @@ function ListFriends({ activeTab }) {
                     </div>
                     <div>
                       <p className="text-sm text-gray-800">
-                        {friend.name_account}
+                        {truncateName(friend.name_account)}
                       </p>
                       <p className="text-[9px] text-gray-500">
                         {new Date(friend.created_at).toLocaleDateString()}
