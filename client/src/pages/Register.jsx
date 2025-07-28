@@ -64,12 +64,15 @@ const Register = () => {
           </div>
 
           <div>
-            <label
-              htmlFor="idAccount"
-              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-            >
-              معرف اللعبة ID
-            </label>
+              <label
+                htmlFor="idAccount"
+                className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
+              >
+                معرف الحساب ID
+                <Link to="/account_id" className="text-red-600 text-[10px] mx-2 hover:underline">
+                  إذا لم تعرف ما هو{' '} إضغط هنا
+                </Link>
+              </label>
             <input
               type="text"
               id="idAccount"

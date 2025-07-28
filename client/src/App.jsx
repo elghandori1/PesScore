@@ -18,6 +18,7 @@ import DashboardFriend from './pages/Dashboard/DashboardFriend';
 import FriendDetails from './pages/FriendDetails/FriendDetails';
 import NewScore from './pages/FriendDetails/NewScore';
 import Developer from './pages/Developer';
+import AccountId from './pages/AccountId';
 
 function App()
 {
@@ -33,13 +34,14 @@ function App()
             <Routes>
               <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
               <Route path="/login" element={<PublicRoute><div dir="rtl"><Login /></div></PublicRoute>} />
+              <Route path="/account_id" element={<AccountId />} />
               <Route path="/register" element={<PublicRoute><div dir="rtl"><Register /></div></PublicRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
               <Route path="/add-friend" element={<ProtectedRoute><AddFriend /></ProtectedRoute>} /> 
               <Route path="/Dashboard-Friend" element={<ProtectedRoute><DashboardFriend/></ProtectedRoute>} />
               <Route path="/friend-details/:id" element={<ProtectedRoute><FriendDetails/></ProtectedRoute>} />
               <Route path="/matchscore/:id" element={<ProtectedRoute><NewScore/></ProtectedRoute>} />
-              <Route path="/Developer" element={<ProtectedRoute><Developer/></ProtectedRoute>} />
+              <Route path="/Developer" element={<Developer/>} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

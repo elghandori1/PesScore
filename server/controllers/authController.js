@@ -22,14 +22,26 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' });
     }
 
-  if (id_account.length !== 16) {
-    return res.status(400).json({ message: 'معرف الحساب يجب أن يكون 16 حرفاً بصيغة XXXX-DDD-DDD-DDD' });
-   }
+    if (id_account.length !== 16) {
+      return res.status(400).json({ message: 'معرف الحساب يجب أن يكون طوله 16 حرفاً' });
+    }
 
-   const idAccountRegex = /^[A-Z]{4}-\d{3}-\d{3}-\d{3}$/;
-   if (!idAccountRegex.test(id_account)) {
-    return res.status(400).json({ message: 'صيغة معرف الحساب غير صحيحة. الصيغة المطلوبة: XXXX-DDD-DDD-DDD' });
-   }
+    const firstFourLowercaseRegex = /^[a-z]{4}/;
+    if (firstFourLowercaseRegex.test(id_account.substring(0, 4))) {
+      return res.status(400).json({ message: 'أول 4 أحرف من معرف الحساب يجب أن تكون أحرفاً كبيرة' });
+    }
+
+    if (id_account === 'ABCD-123-456-789') {
+      return res.status(400).json({ message: 'معرف الحساب المدخل هو مجرد مثال، يرجى إدخال معرف حساب حقيقي.' });
+    }
+
+    const idAccountRegex = /^[A-Z]{4}-\d{3}-\d{3}-\d{3}$/;
+    if (!idAccountRegex.test(id_account)) {
+      return res.status(400).json({ 
+      message: 'صيغة معرف الحساب غير صحيحة. الصيغة المطلوبة:\nXXXX-DDD-DDD-DDD (حيث X حرف كبير و D رقم)' 
+      });
+
+    }
 
     const existingUser = await AuthModel.findByID_Compte(id_account);
     if (existingUser) {
@@ -67,16 +79,16 @@ const login = async (req, res) => {
       return res.status(401).json({ message: 'بيانات الاعتماد غير صالحة' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '4h' });
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: true, // true for production https
+      secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 3600000,
+      maxAge: 4 * 3600000,
     });
 
-    res.json({ message: 'Login successful', user: { id: user.id, name: user.name_account } });
+    res.json({ message: 'Login successful', user: { id: user.id, name: user.name_account },token });
   } catch (error) {
     console.error('Login error:', error.stack || error);
     res.status(500).json({ message: 'Server error' });

@@ -39,6 +39,10 @@ const Profile = () => {
     showMessage('سيتم دعم تغيير اللغة لاحقاً','error');
   };
 
+  const truncateName = (name, length = 16) => {
+    if (!name) return "";
+    return name.length > length ? name.slice(0, length)+ ".." : name;
+  };
   if (loading || !user) return null;
 
   return (
@@ -92,7 +96,7 @@ const Profile = () => {
               </div>
               <div className="p-2 rounded-lg bg-gray-100">
                 <p className="text-[9px] text-gray-500 mb-1">البريد</p>
-                <p className="text-sm text-blue-600 font-medium">{profile.email}</p>
+                <p className="text-sm text-blue-600 font-medium text-center" dir='ltr'>{truncateName(profile.email)}</p>
               </div>
               <div className="p-2 rounded-lg bg-gray-100">
                 <p className="text-[9px] text-gray-500 mb-1">الإنشاء</p>
