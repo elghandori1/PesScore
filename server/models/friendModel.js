@@ -16,7 +16,7 @@ class friendModel {
       await connection.beginTransaction();
   
       const [existingRequest] = await connection.query(
-        'SELECT id FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)',
+      "SELECT id FROM friend_requests WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
         [senderId, receiverId, receiverId, senderId]
       );
   
@@ -26,7 +26,7 @@ class friendModel {
       }
   
       const [existingFriendship] = await connection.query(
-        'SELECT id FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+        "SELECT id FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)",
         [senderId, receiverId, receiverId, senderId]
       );
   
@@ -63,7 +63,7 @@ class friendModel {
 
   static async cancel_Request(senderId, requestId) {
     const [result] = await pool.query(
-      'DELETE FROM friend_requests WHERE id = ? AND sender_id = ? AND status = "pending"',
+      "DELETE FROM friend_requests WHERE id = ? AND sender_id = ? AND status = 'pending'",
       [requestId, senderId]
     );
     return result;
@@ -85,10 +85,10 @@ class friendModel {
     try {
       await connection.beginTransaction();
 
-      const [requests] = await connection.query(
-        'SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = "pending"',
-        [requestId, userId]
-      );
+    const [requests] = await connection.query(
+  "SELECT * FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = 'pending'",
+  [requestId, userId]
+);
 
       if (requests.length === 0) {
         await connection.rollback();
@@ -122,9 +122,9 @@ class friendModel {
     }
   }
 
-  static async reject_friend_request(userId, requestId) {
+   static async reject_friend_request(userId, requestId) {
     const [result] = await pool.query(
-      'DELETE FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = "pending"',
+      "DELETE FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = 'pending'",
       [requestId, userId]
     );
     return result;
@@ -149,7 +149,7 @@ class friendModel {
     await connection.beginTransaction();
 
     const [friendship] = await connection.query(
-      'SELECT id, status FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)',
+      "SELECT id, status FROM friendships WHERE (user1_id = ? AND user2_id = ?) OR (user1_id = ? AND user2_id = ?)",
       [userId, friendId, friendId, userId]
     );
 
@@ -164,7 +164,7 @@ class friendModel {
     }
 
     await connection.query(
-      'UPDATE friendships SET status = ?, requested_by = ? WHERE id = ?',
+    "UPDATE friendships SET status = ?, requested_by = ? WHERE id = ?",
       ['pending_removal', userId, friendship[0].id]
     );
 
@@ -197,7 +197,7 @@ static async cancelRemoveFriend(userId, friendId) {
     }
 
     await connection.query(
-      'UPDATE friendships SET status = "active", requested_by = NULL WHERE id = ?',
+      "UPDATE friendships SET status = 'active', requested_by = NULL WHERE id = ?",
       [friendship[0].id]
     );
 
@@ -268,7 +268,7 @@ static async rejectRemoveFriend(userId, friendId) {
     }
 
     await connection.query(
-      'UPDATE friendships SET status = "active", requested_by = NULL WHERE id = ?',
+      "UPDATE friendships SET status = 'active', requested_by = NULL WHERE id = ?",
       [friendship[0].id]
     );
 

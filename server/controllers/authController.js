@@ -83,9 +83,9 @@ const login = async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 4 * 3600000,
+      secure:true,
+      sameSite: 'none',
+      maxAge: 4 * 3600000
     });
 
     res.json({ message: 'Login successful', user: { id: user.id, name: user.name_account },token });

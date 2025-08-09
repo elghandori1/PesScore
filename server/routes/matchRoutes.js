@@ -14,20 +14,25 @@ const { CreateMatch ,
     removeMatch,
     cancelRemoveMatch,
     acceptRemoveMatch,
-    rejectRemoveMatch
+    rejectRemoveMatch,
+    notifSentPendingMatches,
+    notifReceivedPendingMatches,
+    notifRejectedSentMatches
     } = require("../controllers/MatchController");
 
 const authMiddleware = require("../middleware/authMiddleware");
 
 router.post("/create", authMiddleware, CreateMatch);
 
+router.get('/pending/:friendId', authMiddleware, getSentPendingMatches);
+router.get('/received/:friendId', authMiddleware, getReceivedPendingMatches);
+router.get('/rejected/:friendId', authMiddleware, getRejectedSentMatches);
+
 // GET /match/pending
-router.get('/pending', authMiddleware, getSentPendingMatches);
-
+router.get('/pending', authMiddleware, notifSentPendingMatches);
 // GET /match/received
-router.get('/received', authMiddleware, getReceivedPendingMatches);
-
-router.get('/rejected', authMiddleware, getRejectedSentMatches);
+router.get('/received', authMiddleware, notifReceivedPendingMatches);
+router.get('/rejected', authMiddleware, notifRejectedSentMatches);
 
 // matchRoutes.js
 router.post("/resend/:matchId", authMiddleware, resendMatchRequest);

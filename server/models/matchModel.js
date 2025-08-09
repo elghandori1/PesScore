@@ -36,33 +36,54 @@ static async createMatch({ player1_id, player2_id, player1_score, player2_score,
   }
 }
 
-  static async getPendingSentMatches(userId) {
-    const [rows] = await pool.query(
-      `
-      SELECT m.*, u.name_account AS opponent_name
-      FROM matches m
-      JOIN users u ON u.id = m.player2_id
-      WHERE m.created_by = ? AND m.status = 'pending'
-      ORDER BY m.match_date DESC
-      `,
-      [userId]
-    );
-    return rows;
-  }
+static async getPendingSentMatches(userId, friendId) {
+  const [rows] = await pool.query(
+    `
+    SELECT m.*, u.name_account AS opponent_name
+    FROM matches m
+    JOIN users u ON u.id = m.player2_id
+    WHERE m.created_by = ? AND m.player2_id = ? AND m.status = 'pending'
+    ORDER BY m.match_date DESC
+    `,
+    [userId, friendId]
+  );
+  return rows;
+}
 
-  static async getPendingReceivedMatches(userId) {
-    const [rows] = await pool.query(
-      `
-      SELECT m.*, u.name_account AS opponent_name
-      FROM matches m
-      JOIN users u ON u.id = m.created_by
-      WHERE m.player2_id = ? AND m.status = 'pending'
-      ORDER BY m.match_date DESC
-      `,
-      [userId]
-    );
-    return rows;
-  }
+static async getPendingReceivedMatches(userId, friendId) {
+  const [rows] = await pool.query(
+    `
+    SELECT m.*, u.name_account AS opponent_name
+    FROM matches m
+    JOIN users u ON u.id = m.created_by
+    WHERE m.player2_id = ? AND m.created_by = ? AND m.status = 'pending'
+    ORDER BY m.match_date DESC
+    `,
+    [userId, friendId]
+  );
+  return rows;
+}
+
+static async getrejectedsentmatches(userId, friendId) { 
+  const [rows] = await pool.query(
+    `
+    SELECT m.*, u.name_account AS opponent_name
+    FROM matches m
+    JOIN users u ON u.id = CASE
+      WHEN m.created_by = ? THEN m.player2_id
+      ELSE m.created_by
+    END
+    WHERE (
+      (m.player1_id = ? AND m.player2_id = ?) OR 
+      (m.player2_id = ? AND m.player1_id = ?)
+    ) 
+    AND m.status = 'rejected'
+    ORDER BY m.match_date DESC
+    `,
+    [userId, userId, friendId, userId, friendId]
+  );
+  return rows;
+}
 
   static async getMatchById(matchId) {
     const [rows] = await pool.query(`SELECT * FROM matches WHERE id = ?`, [matchId]);
@@ -83,23 +104,6 @@ static async acceptMatch(matchId) {
   static async cancelMatch(matchId) {
     await pool.query(`DELETE FROM matches WHERE id = ?`, [matchId]);
   }
-
-static async getrejectedsentmatches(userId) { 
-  const [rows] = await pool.query(
-`
-      SELECT m.*, u.name_account AS opponent_name
-      FROM matches m
-      JOIN users u ON u.id = CASE
-        WHEN m.created_by = ? THEN m.player2_id
-        ELSE m.created_by
-      END
-      WHERE (m.player1_id = ? OR m.player2_id = ?) AND m.status = 'rejected'
-      ORDER BY m.match_date DESC
-      `,
-      [userId, userId, userId]
-  );
-  return rows;
-}
 
 static async resendmatchrequest(matchId){
     await pool.query(
@@ -192,6 +196,50 @@ static async cancelRemoveMatch(matchId) {
   }
 }
 
+  static async notfiPendingSentMatches(userId) {
+    const [rows] = await pool.query(
+      `
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = m.player2_id
+      WHERE m.created_by = ? AND m.status = 'pending'
+      ORDER BY m.match_date DESC
+      `,
+      [userId]
+    );
+    return rows;
+  }
+
+  static async notifPendingReceivedMatches(userId) {
+    const [rows] = await pool.query(
+      `
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = m.created_by
+      WHERE m.player2_id = ? AND m.status = 'pending'
+      ORDER BY m.match_date DESC
+      `,
+      [userId]
+    );
+    return rows;
+  }
+
+  static async notifrejectedsentmatches(userId) { 
+  const [rows] = await pool.query(
+`
+      SELECT m.*, u.name_account AS opponent_name
+      FROM matches m
+      JOIN users u ON u.id = CASE
+        WHEN m.created_by = ? THEN m.player2_id
+        ELSE m.created_by
+      END
+      WHERE (m.player1_id = ? OR m.player2_id = ?) AND m.status = 'rejected'
+      ORDER BY m.match_date DESC
+      `,
+      [userId, userId, userId]
+  );
+  return rows;
+}
 }
 
 module.exports = matchModel;

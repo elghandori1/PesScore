@@ -36,23 +36,21 @@ const CreateMatch = async (req, res) => {
 const getSentPendingMatches = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const matches = await matchModel.getPendingSentMatches(userId);
-    if(matches){
-      return res.json({ user: matches || []});
-    }
+    const friendId = req.params.friendId;
+    const matches = await matchModel.getPendingSentMatches(userId, friendId);
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching sent matches:", err);
-    res.status(500).json({ message: "فشل في جلب المباريات المرسلة" });//
+    res.status(500).json({ message: "فشل في جلب المباريات المرسلة" });
   }
 };
 
 const getReceivedPendingMatches = async (req, res) => {
   try {
-     const userId = req.user.userId;
-    const matches = await matchModel.getPendingReceivedMatches(userId);
-    if(matches){
-      return res.json({ user: matches || [] });
-    }
+    const userId = req.user.userId;
+    const friendId = req.params.friendId;
+    const matches = await matchModel.getPendingReceivedMatches(userId, friendId);
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching received matches:", err);
     res.status(500).json({ message: "فشل في جلب المباريات الواردة" });
@@ -129,13 +127,12 @@ const cancelMatch = async (req, res) => {
 const getRejectedSentMatches = async (req, res) => {
   try {
     const userId = req.user.userId;
-    const matches = await matchModel.getrejectedsentmatches(userId);
-    if(matches){
-      return res.json({ user: matches || []});
-    }
+    const friendId = req.params.friendId;
+    const matches = await matchModel.getrejectedsentmatches(userId, friendId);
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching rejected matches:", err);
-    res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });//
+    res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });
   }
 };
 
@@ -288,6 +285,46 @@ const cancelRemoveMatch = async (req, res) => {
     return res.status(500).json({ message: "فشل في إلغاء طلب إزالة المباراة" });
   }
 };
+const notifSentPendingMatches = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const matches = await matchModel.notfiPendingSentMatches(userId);
+    if(matches){
+      return res.json({ user: matches || []});
+    }
+  } catch (err) {
+    console.error("Error fetching sent matches:", err);
+    res.status(500).json({ message: "فشل في جلب المباريات المرسلة" });//
+  }
+};
+
+const notifReceivedPendingMatches = async (req, res) => {
+  try {
+     const userId = req.user.userId;
+    const matches = await matchModel.notifPendingReceivedMatches(userId);
+    if(matches){
+      return res.json({ user: matches || [] });
+    }
+  } catch (err) {
+    console.error("Error fetching received matches:", err);
+    res.status(500).json({ message: "فشل في جلب المباريات الواردة" });
+  }
+};
+
+const notifRejectedSentMatches = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const matches = await matchModel.notifrejectedsentmatches(userId);
+    if(matches){
+      return res.json({ user: matches || []});
+    }
+  } catch (err) {
+    console.error("Error fetching rejected matches:", err);
+    res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });//
+  }
+};
+
+
 
 module.exports = {
   CreateMatch,
@@ -303,5 +340,8 @@ module.exports = {
   removeMatch,
   cancelRemoveMatch,
   acceptRemoveMatch,
-  rejectRemoveMatch
+  rejectRemoveMatch,
+  notifSentPendingMatches,
+  notifReceivedPendingMatches,
+  notifRejectedSentMatches
 };

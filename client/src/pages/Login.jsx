@@ -11,6 +11,29 @@ const Login = () => {
   const navigate = useNavigate();
   const { showMessage, clearMessage } = useMessage();
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleIdChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setIdAccount(value);
+
+    // Match exactly: 4 letters + 9 digits (total 13 chars)
+    const pattern = /^[A-Z]{4}[0-9]{9}$/;
+
+    if (pattern.test(value)) {
+      setIsProcessing(true);
+
+      setTimeout(() => {
+        const formatted = `${value.slice(0, 4)}-${value.slice(
+          4,
+          7
+        )}-${value.slice(7, 10)}-${value.slice(10, 13)}`;
+        setIdAccount(formatted);
+
+        setIsProcessing(false);
+      }, 300);
+    }
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
    clearMessage();
@@ -19,6 +42,7 @@ const Login = () => {
         id_account: idAccount.trim(),
         password: password.trim(),
       });
+     localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       setJustLoggedIn(true);
       navigate("/");
@@ -47,15 +71,17 @@ const Login = () => {
             >
               معرف اللعبة ID
             </label>
-            <input
+             <input
               type="text"
               id="idAccount"
               name="idAccount"
               placeholder="ID أدخل معرف اللعبة الخاص بك"
               value={idAccount}
-              onChange={(e) => setIdAccount(e.target.value)}
+              onChange={handleIdChange}
+              readOnly={isProcessing}
               required
-              className="w-full p-2 sm:p-2.5 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm"
+              className={`w-full p-2 sm:p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm 
+                ${isProcessing ? "bg-green-100" : "border-gray-300"}`}
             />
           </div>
 
