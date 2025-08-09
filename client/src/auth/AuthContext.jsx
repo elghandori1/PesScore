@@ -26,9 +26,10 @@ export const AuthProvider = ({ children }) => {
     fetchUser();
   }, []);
 
-  const logout = async () => {
+ const logout = async () => {
     try {
       await axiosClient.get('/auth/logout');
+      localStorage.removeItem('token'); 
       setUser(null);
       navigate('/login');
     } catch (err) {

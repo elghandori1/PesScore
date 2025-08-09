@@ -16,9 +16,9 @@ const PendingMatch = ({id_friend, setHasNotifications}) => {
     setIsLoading(true);
     try {
       const [receivedRes, sentRes, rejectRes] = await Promise.all([
-        axiosClient.get("/match/received"),
-        axiosClient.get("/match/pending"),
-        axiosClient.get("/match/rejected"),
+        axiosClient.get(`/match/received/${id_friend}`),
+        axiosClient.get(`/match/pending/${id_friend}`),
+        axiosClient.get(`/match/rejected/${id_friend}`),
       ]);
 
       setReceivedMatch(receivedRes.data.user || []);

@@ -57,10 +57,13 @@ function ListFriends({ activeTab }) {
     }
   };
 
-  useEffect(() => {
-    getFriends();
-    checkFriendMatches();
-  }, [activeTab]);
+useEffect(() => {
+  const fetchData = async () => {
+    await getFriends();
+    await checkFriendMatches();
+  };
+  fetchData();
+}, [activeTab]);
 
   const handleRemoveFriend = async (friendId) => {
     try {

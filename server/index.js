@@ -7,16 +7,17 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const friendRoutes = require('./routes/friendRoutes');
 const matchRoutes = require('./routes/matchRoutes');
-
+ 
 const app = express();
 
 app.use(express.json());
 app.use(cookieParser());
+
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin:process.env.CORS_ORIGIN,
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
 // Routes

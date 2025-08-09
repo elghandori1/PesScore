@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Message from "../components/Message";
 import axiosClient from "../api/axiosClient";
-import {useMessage} from '../hooks/useMessage';
+import { useMessage } from "../hooks/useMessage";
 
 const Register = () => {
   const [nameAccount, setNameAccount] = useState("");
@@ -13,24 +13,47 @@ const Register = () => {
   const navigate = useNavigate();
   const { showMessage, clearMessage } = useMessage();
 
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const handleIdChange = (e) => {
+    const value = e.target.value.toUpperCase();
+    setIdAccount(value);
+
+    // Match exactly: 4 letters + 9 digits (total 13 chars)
+    const pattern = /^[A-Z]{4}[0-9]{9}$/;
+
+    if (pattern.test(value)) {
+      setIsProcessing(true);
+
+      setTimeout(() => {
+        const formatted = `${value.slice(0, 4)}-${value.slice(
+          4,
+          7
+        )}-${value.slice(7, 10)}-${value.slice(10, 13)}`;
+        setIdAccount(formatted);
+
+        setIsProcessing(false);
+      }, 300);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     clearMessage();
 
     if (password !== confirmPassword) {
-      return showMessage("كلمة المرور غير متطابقة",'error');
+      return showMessage("كلمة المرور غير متطابقة", "error");
     }
-
     try {
       await axiosClient.post("/auth/register", {
-        name_account: nameAccount,
+        name_account: nameAccount.trim(),
         id_account: idAccount,
         email,
         password,
       });
       navigate("/login");
     } catch (error) {
-      showMessage(error.response?.data?.message || "Register failed",'error');
+      showMessage(error.response?.data?.message || "Register failed", "error");
     }
   };
 
@@ -64,7 +87,7 @@ const Register = () => {
           </div>
 
           <div>
-              <label
+           <label
                 htmlFor="idAccount"
                 className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
               >
@@ -73,16 +96,18 @@ const Register = () => {
                   إذا لم تعرف ما هو{' '} إضغط هنا
                 </Link>
               </label>
-            <input
+            <input dir="ltr"
               type="text"
               id="idAccount"
               name="idAccount"
-              placeholder="أدخل معرف اللعبة الخاص بك"
+              placeholder= "ABCD-123-456-789 أدخل معرف اللعبة الخاص بك"
               value={idAccount}
               maxLength={16}
-              onChange={(e) => setIdAccount(e.target.value)}
+              onChange={handleIdChange}
+              readOnly={isProcessing}
               required
-              className="w-full p-2 sm:p-2.5 border border-gray-300 rounded-md text-sm"
+              className={`w-full p-2 sm:p-2.5 border rounded-md text-sm text-end
+              ${isProcessing ? "bg-green-100" : "border-gray-300"}`}
             />
           </div>
 
