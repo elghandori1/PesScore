@@ -1,15 +1,17 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMessage } from "../../hooks/useMessage";
+import { useSocketContext } from "../../context/SocketContext";
 import axiosClient from "../../api/axiosClient";
 
-function PendingFriends({onRequestsUpdate}) {
+function PendingFriends({ onRequestsUpdate }) {
   const [activeTab, setActiveTab] = useState("received");
   const [sentRequests, setSentRequests] = useState([]);
   const [receivedRequests, setReceivedRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const { showMessage, clearMessage } = useMessage();
+  const socketRef = useSocketContext();
 
-  const fetchRequests = async () => {
+  const fetchRequests = useCallback(async () => {
     setIsLoading(true);
     clearMessage();
 
@@ -29,11 +31,26 @@ function PendingFriends({onRequestsUpdate}) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchRequests();
-  }, [activeTab]);
+  }, [activeTab, fetchRequests]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.on("friend:request", fetchRequests);
+    s.on("friend:requestCancelled", fetchRequests);
+    s.on("friend:accepted", fetchRequests);
+    s.on("friend:rejected", fetchRequests);
+    return () => {
+      s.off("friend:request", fetchRequests);
+      s.off("friend:requestCancelled", fetchRequests);
+      s.off("friend:accepted", fetchRequests);
+      s.off("friend:rejected", fetchRequests);
+    };
+  }, [socketRef, fetchRequests]);
 
   const handleCancelRequest = async (requestId) => {
     clearMessage();

@@ -1,5 +1,5 @@
 import React from "react";
-import { FaDiscord, FaXTwitter, FaLinkedin, FaWhatsapp } from "react-icons/fa6";
+import { FaXTwitter, FaLinkedin } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
 function Developer() {
@@ -20,14 +20,6 @@ const navigate = useNavigate();
       <div className="flex flex-col items-center mt-10">
       <div className="w-full space-y-2 sm:space-y-3">
 
-         
-
-            <a href="https://discord.com" 
-               className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base">
-              <FaDiscord className="text-[#5865F2]" />
-              <span className="text-gray-300">elghandouri1</span>
-            </a>
-            
             <a href="https://x.com/elghandouri1" 
                className="flex items-center gap-2 sm:gap-3 p-2 sm:p-3 bg-gray-700 rounded-lg hover:bg-gray-600 transition-colors text-sm sm:text-base">
               <FaXTwitter className="text-gray-300" />

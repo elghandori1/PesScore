@@ -1,5 +1,6 @@
-import {useState,useEffect}  from "react";
+import { useState, useEffect, useCallback } from "react";
 import useAuth from "../../auth/useAuth";
+import { useSocketContext } from "../../context/SocketContext";
 import axiosClient from "../../api/axiosClient";
 import PendingFriends from "./PendingFriends";
 import ListFriends from "./ListFriends";
@@ -8,22 +9,37 @@ function DashboardFriend() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState("friends");
   const [pendingRequests, setPendingRequests] = useState([]);
+  const socketRef = useSocketContext();
   const handleTabSwitch = (tab) => setActiveTab(tab);
- 
-    useEffect(() => {
-    const checkNotifications = async () => {
-      try {
-        const friendRes = await axiosClient.get("/friend/received");
-        const pendingFriends = friendRes.data.user;
-        setPendingRequests(pendingFriends || []);
-      } catch (error) {
-        console.error("Error checking notifications:", error);
-      }
-    };
-    if (user) {
-      checkNotifications();
+
+  const checkNotifications = useCallback(async () => {
+    try {
+      const friendRes = await axiosClient.get("/friend/received");
+      const pendingFriends = friendRes.data.user;
+      setPendingRequests(pendingFriends || []);
+    } catch (error) {
+      console.error("Error checking notifications:", error);
     }
-  }, [user]);
+  }, []);
+
+  useEffect(() => {
+    if (user) checkNotifications();
+  }, [user, checkNotifications]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.on("friend:request", checkNotifications);
+    s.on("friend:requestCancelled", checkNotifications);
+    s.on("friend:accepted", checkNotifications);
+    s.on("friend:rejected", checkNotifications);
+    return () => {
+      s.off("friend:request", checkNotifications);
+      s.off("friend:requestCancelled", checkNotifications);
+      s.off("friend:accepted", checkNotifications);
+      s.off("friend:rejected", checkNotifications);
+    };
+  }, [socketRef, checkNotifications]);
 
   const handleRequestsUpdate = (updatedRequests) => {
     setPendingRequests(updatedRequests);

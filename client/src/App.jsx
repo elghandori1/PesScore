@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { MessageProvider } from './context/MessageContext';
+import { SocketProvider } from './context/SocketContext';
 import './style/App.css';
 
 import PublicRoute from './routes/PublicRoute';
@@ -25,6 +26,7 @@ function App()
   return (
     <Router>
     <AuthProvider>
+    <SocketProvider>
     <MessageProvider> 
         <div className="min-h-screen flex flex-col">
           <div className="app-background fixed inset-0 -z-10" />
@@ -48,6 +50,7 @@ function App()
          <Footer/>
         </div>
         </MessageProvider>
+    </SocketProvider>
       </AuthProvider>
     </Router>
   );

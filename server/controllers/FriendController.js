@@ -1,4 +1,5 @@
 const friendModel = require('../models/friendModel');
+const { emitToUser } = require('../socket');
 
 const SearchFriend = async (req, res) => {
   try {
@@ -42,6 +43,7 @@ const requestFriend = async (req, res) => {
     }
 
     await friendModel.addFriend(receiverId, senderId);
+    emitToUser(receiverId, 'friend:request', { senderId });
     return res.status(200).json({ message: 'تم إرسال طلب الصداقة بنجاح'});
 
   } catch (error) {
@@ -73,12 +75,16 @@ const cancelFriendRequest = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.userId;
 
+    const requestRow = await friendModel.getRequestById(id, userId);
     const result = await friendModel.cancel_Request(userId, id);
 
     if (!result || result.affectedRows === 0) {
       return res.status(404).json({ message: 'طلب إلغاء الصداقة غير موجود أو تم قبوله '});
     }
 
+    if (requestRow && requestRow.receiver_id) {
+      emitToUser(requestRow.receiver_id, 'friend:requestCancelled', { requestId: id });
+    }
     return res.status(200).json({ message: 'تم إلغاء طلب الصداقة بنجاح' });
   } catch (error) {
     console.error('Cancel error:', error);
@@ -117,6 +123,7 @@ const AcceptFriendRequest = async (req, res) => {
       return res.status(404).json({ message: 'طلب الصداقة غير موجود أو تم قبوله مسبقًا' });
     }
 
+    emitToUser(request.sender_id, 'friend:accepted', { receiverId: userId });
     return res.status(200).json({ message: 'تم قبول طلب الصداقة بنجاح' });
 
   } catch (error) {
@@ -134,12 +141,16 @@ const RejectFriendRequest = async (req, res) => {
       return res.status(401).json({ message: 'غير مصرح بالدخول' });
     }
 
+    const requestRow = await friendModel.getRequestByIdAndReceiver(id, userId);
     const result = await friendModel.reject_friend_request(userId, id);
 
     if (!result || result.affectedRows === 0) {
       return res.status(404).json({ message: 'طلب الصداقة غير موجود أو تم رفضه مسبقًا' });
     }
 
+    if (requestRow && requestRow.sender_id) {
+      emitToUser(requestRow.sender_id, 'friend:rejected', { requestId: id });
+    }
     return res.status(200).json({ message: 'تم رفض طلب الصداقة بنجاح' });
 
   }catch(error) {
@@ -181,6 +192,7 @@ const RemoveFriendRequest = async (req, res) => {
     if (!result) {
       return res.status(200).json({ message: 'الصديق قد يكون مُزالًا أو قيد الإزالة' });
     }
+    emitToUser(id, 'friend:removeRequested', { requestedBy: userId });
     return res.status(200).json({ message: 'تم طلب إزالة الصديق بنجاح' });
 
   } catch (error) {
@@ -199,6 +211,7 @@ const CancelRemoveFriend = async (req, res) => {
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك إلغاء طلب إزالة نفسك كصديق' });
 
     await friendModel.cancelRemoveFriend(userId, id);
+    emitToUser(id, 'friend:removeCancelled', {});
     return res.status(200).json({ message: 'تم إلغاء طلب إزالة الصديق بنجاح' });
 
   } catch (error) {
@@ -217,6 +230,7 @@ const AcceptRemoveFriend = async (req, res) => {
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك قبول إزالة نفسك كصديق' });
 
     await friendModel.acceptRemoveFriend(userId, id);
+    emitToUser(id, 'friend:removed', {});
     return res.status(200).json({ message: 'تم قبول إزالة الصديق بنجاح' });
 
   } catch (error) {
@@ -235,6 +249,7 @@ const RejectRemoveFriend = async (req, res) => {
     if (id === userId) return res.status(400).json({ message: 'لا يمكنك رفض إزالة نفسك كصديق' });
 
     await friendModel.rejectRemoveFriend(userId, id);
+    emitToUser(id, 'friend:removeRejected', {});
     return res.status(200).json({ message: 'تم رفض طلب إزالة الصديق بنجاح' });
 
   } catch (error) {
