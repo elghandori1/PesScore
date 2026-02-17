@@ -3,15 +3,10 @@ const AuthModel = require('../models/authModel');
 
 const register = async (req, res) => {
   try {
-    const { name_account, id_account, email, password } = req.body;
+    const { name_account, id_account, password } = req.body;
 
-    if (!name_account || !id_account || !email || !password) {
+    if (!name_account || !id_account || !password) {
       return res.status(400).json({ message: 'يجب ملء جميع الحقول' });
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: 'صيغة البريد الإلكتروني غير صالحة' });
     }
 
     if (name_account.length < 3 || name_account.length > 16) {
@@ -48,12 +43,7 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'معرف المستخدم مستخدم مسبقًا' });
     }
 
-    const existingEmail = await AuthModel.findByEmail(email);
-    if (existingEmail) {
-      return res.status(400).json({ message: 'البريد الإلكتروني مستخدم مسبقًا' });
-    } 
-
-    await AuthModel.createUser(name_account, id_account, email, password);
+    await AuthModel.createUser(name_account, id_account, password);
     res.status(201).json({ message: 'تم إنشاء الحساب بنجاح' });
   } catch (error) {
     console.error('Register error:', error.stack || error);

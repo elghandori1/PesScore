@@ -6,6 +6,7 @@ import { useMessage } from '../hooks/useMessage';
 
 const Profile = () => {
   const [profile, setProfile] = useState(null);
+  const [friendCount, setFriendCount] = useState(0);
   const [error, setError] = useState('');
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -21,6 +22,15 @@ const Profile = () => {
       try {
         const response = await axiosClient.get('/user/profile');
         setProfile(response.data.userprofile);
+        
+        // Fetch friends count
+        try {
+          const friendsResponse = await axiosClient.get('/friends/list');
+          setFriendCount(friendsResponse.data.friends.length);
+        } catch (err) {
+          console.log('Error fetching friends:', err);
+          setFriendCount(0);
+        }
       } catch (error) {
         setError(error.response?.data?.message || 'Failed to load profile');
       }
@@ -32,16 +42,6 @@ const Profile = () => {
   const changeLanguage = () => {
     // Placeholder for language change functionality
     showMessage('ستتم إضافة خيار تغيير اللغة في المستقبل','error');
-  };
-
-    const changeTheme = () => {
-    // Placeholder for language change functionality
-    showMessage('سيتم دعم تغيير اللغة لاحقاً','error');
-  };
-
-  const truncateName = (name, length = 16) => {
-    if (!name) return "";
-    return name.length > length ? name.slice(0, length)+ ".." : name;
   };
   if (loading || !user) return null;
 
@@ -66,12 +66,6 @@ const Profile = () => {
           </div>
           <div className="flex gap-1">
             <button 
-              onClick={changeTheme}
-              className="px-2 py-1 rounded-full bg-blue-500 text-white text-xs"
-            >
-              المود
-            </button>
-            <button 
               onClick={changeLanguage}
               className="px-2 py-1 rounded-full bg-gray-200 text-blue-500 text-xs"
             >
@@ -95,8 +89,8 @@ const Profile = () => {
                 <p className="text-sm text-blue-600 font-medium">{profile.id_account}</p>
               </div>
               <div className="p-2 rounded-lg bg-gray-100">
-                <p className="text-[9px] text-gray-500 mb-1">البريد</p>
-                <p className="text-sm text-blue-600 font-medium text-center" dir='ltr'>{truncateName(profile.email)}</p>
+                <p className="text-[9px] text-gray-500 mb-1">عدد الأصدقاء</p>
+                <p className="text-sm text-blue-600 font-medium text-center">{friendCount}</p>
               </div>
               <div className="p-2 rounded-lg bg-gray-100">
                 <p className="text-[9px] text-gray-500 mb-1">الإنشاء</p>

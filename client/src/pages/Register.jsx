@@ -7,7 +7,6 @@ import { useMessage } from "../hooks/useMessage";
 const Register = () => {
   const [nameAccount, setNameAccount] = useState("");
   const [idAccount, setIdAccount] = useState("");
-  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
@@ -48,7 +47,6 @@ const Register = () => {
       await axiosClient.post("/auth/register", {
         name_account: nameAccount.trim(),
         id_account: idAccount,
-        email,
         password,
       });
       navigate("/login");
@@ -87,7 +85,7 @@ const Register = () => {
           </div>
 
           <div>
-           <label
+            <label
                 htmlFor="idAccount"
                 className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
               >
@@ -108,25 +106,6 @@ const Register = () => {
               required
               className={`w-full p-2 sm:p-2.5 border rounded-md text-sm text-end
               ${isProcessing ? "bg-green-100" : "border-gray-300"}`}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-xs sm:text-sm font-medium text-gray-700 mb-1"
-            >
-              البريد الإلكتروني
-            </label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="أدخل بريدك الإلكتروني"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full p-2 sm:p-2.5 border border-gray-300 rounded-md text-sm"
             />
           </div>
 

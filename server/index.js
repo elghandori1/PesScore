@@ -10,6 +10,7 @@ const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const friendRoutes = require('./routes/friendRoutes');
 const matchRoutes = require('./routes/matchRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const server = http.createServer(app);
@@ -37,6 +38,7 @@ app.use('/auth', authRoutes);
 app.use('/user', profileRoutes);
 app.use('/friend', friendRoutes);
 app.use('/match', matchRoutes);
+app.use('/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
