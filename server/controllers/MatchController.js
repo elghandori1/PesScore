@@ -1,4 +1,5 @@
 const matchModel = require("../models/matchModel");
+const { emitToUser } = require("../socket");
 
 const CreateMatch = async (req, res) => {
   const {player1_id, player2_id, player1_score, player2_score } = req.body;
@@ -24,8 +25,8 @@ const CreateMatch = async (req, res) => {
       player2_score,
       created_by: userId,
     });
-    
- 
+
+    emitToUser(player2_id, "match:new", { player1_id, player2_id });
     return res.status(201).json({ message: "تم إنشاء المباراة بنجاح" });
   } catch (error) {
     console.error("Error creating match:", error);
@@ -71,6 +72,8 @@ const acceptMatch = async (req, res) => {
 
     await matchModel.acceptMatch(match.id);
 
+    emitToUser(match.player1_id, "match:accepted", { matchId: match.id });
+    emitToUser(match.player2_id, "match:accepted", { matchId: match.id });
     return res.json({ message: "تم قبول المباراة" });
   } catch (error) {
     console.error("Error accepting match:", error);
@@ -95,6 +98,8 @@ const rejectMatch = async (req, res) => {
 
     await matchModel.rejectMatch(matchId);
 
+    emitToUser(match.player1_id, "match:rejected", { matchId });
+    emitToUser(match.player2_id, "match:rejected", { matchId });
     return res.json({ message: "تم رفض المباراة" });
   } catch (error) {
     console.error("Error rejecting match:", error);
@@ -118,6 +123,8 @@ const cancelMatch = async (req, res) => {
     }
 
     await matchModel.cancelMatch(matchId);
+    emitToUser(match.player2_id, "match:cancelled", { matchId });
+    return res.status(200).json({ message: "تم إلغاء المباراة" });
   } catch (error) {
     console.error("Error canceling match:", error);
     return res.status(500).json({ message: "فشل في إلغاء المباراة" });
@@ -154,6 +161,8 @@ const resendMatchRequest = async (req, res) => {
     }
     
    await matchModel.resendmatchrequest(matchId);
+   const otherId = match.player1_id === userId ? match.player2_id : match.player1_id;
+   emitToUser(otherId, "match:resend", { matchId });
    return res.json({ message: "تم إعادة إرسال المباراة بنجاح" });
   } catch (err) {
     console.error("Error resending match:", err);
@@ -174,6 +183,8 @@ const cancelRejectedMatch = async (req, res) => {
     }
    await matchModel.cancelrejectedmatch(matchId);
 
+   emitToUser(match.player1_id, "match:rejectCancelled", { matchId });
+   emitToUser(match.player2_id, "match:rejectCancelled", { matchId });
    return res.json({ message: "تمت إزالة الرفض بنجاح"});
   } catch (err) {
     console.error("Error cancel reject match:", err);
@@ -208,6 +219,8 @@ const removeMatch = async (req, res) => {
     }
 
     await matchModel.removematche(matchId, userId);
+    const otherId = match.player1_id === userId ? match.player2_id : match.player1_id;
+    emitToUser(otherId, "match:removeRequested", { matchId });
     return res.json({ message: "تم إرسال طلب إزالة المباراة" });
   } catch (err) {
     console.error("Error removing match:", err);
@@ -230,6 +243,8 @@ const acceptRemoveMatch = async (req, res) => {
     }
 
     await matchModel.acceptRemoveMatch(matchId);
+    const otherId = match.player1_id === userId ? match.player2_id : match.player1_id;
+    emitToUser(otherId, "match:removed", { matchId });
     return res.json({ message: "تم قبول إزالة المباراة" });
   } catch (err) {
     console.error("Error accepting remove match:", err);
@@ -252,6 +267,8 @@ const rejectRemoveMatch = async (req, res) => {
     }
 
     await matchModel.rejectRemoveMatch(matchId);
+    const otherId = match.player1_id === userId ? match.player2_id : match.player1_id;
+    emitToUser(otherId, "match:removeRejected", { matchId });
     return res.json({ message: "تم رفض إزالة المباراة" });
   } catch (err) {
     console.error("Error rejecting remove match:", err);
@@ -279,6 +296,8 @@ const cancelRemoveMatch = async (req, res) => {
     }
 
     await matchModel.cancelRemoveMatch(matchId);
+    const otherId = match.player1_id === userId ? match.player2_id : match.player1_id;
+    emitToUser(otherId, "match:removeCancelled", { matchId });
     return res.json({ message: "تم إلغاء طلب إزالة المباراة بنجاح" });
   } catch (err) {
     console.error("Error canceling remove match:", err);
@@ -289,25 +308,21 @@ const notifSentPendingMatches = async (req, res) => {
   try {
     const userId = req.user.userId;
     const matches = await matchModel.notfiPendingSentMatches(userId);
-    if(matches){
-      return res.json({ user: matches || []});
-    }
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching sent matches:", err);
-    res.status(500).json({ message: "فشل في جلب المباريات المرسلة" });//
+    return res.status(500).json({ message: "فشل في جلب المباريات المرسلة" });
   }
 };
 
 const notifReceivedPendingMatches = async (req, res) => {
   try {
-     const userId = req.user.userId;
+    const userId = req.user.userId;
     const matches = await matchModel.notifPendingReceivedMatches(userId);
-    if(matches){
-      return res.json({ user: matches || [] });
-    }
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching received matches:", err);
-    res.status(500).json({ message: "فشل في جلب المباريات الواردة" });
+    return res.status(500).json({ message: "فشل في جلب المباريات الواردة" });
   }
 };
 
@@ -315,12 +330,10 @@ const notifRejectedSentMatches = async (req, res) => {
   try {
     const userId = req.user.userId;
     const matches = await matchModel.notifrejectedsentmatches(userId);
-    if(matches){
-      return res.json({ user: matches || []});
-    }
+    return res.json({ user: matches || [] });
   } catch (err) {
     console.error("Error fetching rejected matches:", err);
-    res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });//
+    return res.status(500).json({ message: "خطأ في جلب المباريات المرفوضة" });
   }
 };
 

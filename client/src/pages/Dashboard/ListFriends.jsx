@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import axiosClient from "../../api/axiosClient";
 import { useMessage } from "../../hooks/useMessage";
+import { useSocketContext } from "../../context/SocketContext";
 import useAuth from "../../auth/useAuth";
 
 function ListFriends({ activeTab }) {
@@ -11,8 +12,9 @@ function ListFriends({ activeTab }) {
   const { showMessage } = useMessage();
   const { user } = useAuth();
   const [friendMatches, setFriendMatches] = useState({});
+  const socketRef = useSocketContext();
 
-  const getFriends = async () => {
+  const getFriends = useCallback(async () => {
     setIsLoading(true);
     try {
       const res = await axiosClient.get("/friend/list-friend");
@@ -25,9 +27,9 @@ function ListFriends({ activeTab }) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, []);
 
-  const checkFriendMatches = async () => {
+  const checkFriendMatches = useCallback(async () => {
     try {
       const [receivedRes, rejectedRes] = await Promise.all([
         axiosClient.get("/match/received"),
@@ -55,15 +57,50 @@ function ListFriends({ activeTab }) {
     } catch (error) {
       console.error("Error checking friend matches:", error);
     }
-  };
+  }, [user?.id]);
 
-useEffect(() => {
-  const fetchData = async () => {
-    await getFriends();
-    await checkFriendMatches();
-  };
-  fetchData();
-}, [activeTab]);
+  useEffect(() => {
+    const fetchData = async () => {
+      await getFriends();
+      await checkFriendMatches();
+    };
+    fetchData();
+  }, [activeTab, getFriends, checkFriendMatches]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    const refresh = () => {
+      getFriends();
+      checkFriendMatches();
+    };
+    s.on("friend:accepted", refresh);
+    s.on("friend:removed", refresh);
+    s.on("friend:removeRequested", refresh);
+    s.on("friend:removeCancelled", refresh);
+    s.on("friend:removeRejected", refresh);
+    s.on("match:new", refresh);
+    s.on("match:accepted", refresh);
+    s.on("match:rejected", refresh);
+    s.on("match:removed", refresh);
+    s.on("match:removeRequested", refresh);
+    s.on("match:removeCancelled", refresh);
+    s.on("match:removeRejected", refresh);
+    return () => {
+      s.off("friend:accepted", refresh);
+      s.off("friend:removed", refresh);
+      s.off("friend:removeRequested", refresh);
+      s.off("friend:removeCancelled", refresh);
+      s.off("friend:removeRejected", refresh);
+      s.off("match:new", refresh);
+      s.off("match:accepted", refresh);
+      s.off("match:rejected", refresh);
+      s.off("match:removed", refresh);
+      s.off("match:removeRequested", refresh);
+      s.off("match:removeCancelled", refresh);
+      s.off("match:removeRejected", refresh);
+    };
+  }, [socketRef, getFriends, checkFriendMatches]);
 
   const handleRemoveFriend = async (friendId) => {
     try {

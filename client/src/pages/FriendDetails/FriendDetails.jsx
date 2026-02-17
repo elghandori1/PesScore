@@ -1,9 +1,10 @@
 import { Link, useParams } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMessage } from "../../hooks/useMessage";
+import { useSocketContext } from "../../context/SocketContext";
 import axiosClient from "../../api/axiosClient";
-import MatchesTab from './MatchesTab';
-import PendingMatch from './PendingMatch'
+import MatchesTab from "./MatchesTab";
+import PendingMatch from "./PendingMatch";
 import useAuth from "../../auth/useAuth";
 
 function FriendDetails() {
@@ -14,8 +15,9 @@ function FriendDetails() {
   const [removedScore, setRemovedScore] = useState(false);
   const [activeTab, setActiveTab] = useState("matches");
   const { showMessage } = useMessage();
+  const socketRef = useSocketContext();
 
-  const fetchFriend = async () => {
+  const fetchFriend = useCallback(async () => {
     try {
       const response = await axiosClient.get(`/friend/friend-details/${id}`);
       setFriend(response.data.friend || {});
@@ -25,14 +27,10 @@ function FriendDetails() {
         "error"
       );
     }
-  };
+  }, [id]);
 
-  useEffect(() => {
-    fetchFriend();
-  }, [id, activeTab]);
-
-useEffect(() => {
-  const checkNotifications = async () => {
+  const checkNotifications = useCallback(async () => {
+    if (!user || !id) return;
     try {
       const [pendRes, rejectRes, friendRes] = await Promise.all([
         axiosClient.get("/match/received"),
@@ -42,33 +40,65 @@ useEffect(() => {
       const pendingMatches = pendRes.data.user || [];
       const rejectedMatches = rejectRes.data.user || [];
       const friendMatches = friendRes.data.matches || [];
-       const hasPendingRemoval = friendMatches.some(match => {
-          return match.removed === 'pending_remove' && 
-                 match.removal_requested_by != user.id;
-        });
-        
-        setRemovedScore(hasPendingRemoval);
-
-      const hasPending = pendingMatches.some(match => match.player1_id == id);
-      const hasRejected = rejectedMatches.some(match => {
+      const hasPendingRemoval = friendMatches.some(
+        (match) =>
+          match.removed === "pending_remove" &&
+          match.removal_requested_by != user.id
+      );
+      setRemovedScore(hasPendingRemoval);
+      const hasPending = pendingMatches.some((match) => match.player1_id == id);
+      const hasRejected = rejectedMatches.some((match) => {
         const isCurrentUserCreator = match.created_by == user.id;
         const isFriendPlayer = match.player1_id == id || match.player2_id == id;
-        const isRejected = match.status === 'rejected';
-        
+        const isRejected = match.status === "rejected";
         return isCurrentUserCreator && isFriendPlayer && isRejected;
       });
-
       setHasNotifications(hasPending || hasRejected);
-       
     } catch (error) {
       console.error("Error checking notifications:", error);
     }
-  };
+  }, [user, id]);
 
-  if (user && id) {
-    checkNotifications();
-  }
-}, [user, id, activeTab]);
+  useEffect(() => {
+    fetchFriend();
+  }, [id, activeTab, fetchFriend]);
+
+  useEffect(() => {
+    if (user && id) checkNotifications();
+  }, [user, id, activeTab, checkNotifications]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s || !id) return;
+    const refresh = () => {
+      fetchFriend();
+      checkNotifications();
+    };
+    s.on("match:new", refresh);
+    s.on("match:accepted", refresh);
+    s.on("match:rejected", refresh);
+    s.on("match:cancelled", refresh);
+    s.on("match:resend", refresh);
+    s.on("match:rejectCancelled", refresh);
+    s.on("match:removed", refresh);
+    s.on("match:removeRequested", refresh);
+    s.on("match:removeCancelled", refresh);
+    s.on("match:removeRejected", refresh);
+    s.on("friend:removed", refresh);
+    return () => {
+      s.off("match:new", refresh);
+      s.off("match:accepted", refresh);
+      s.off("match:rejected", refresh);
+      s.off("match:cancelled", refresh);
+      s.off("match:resend", refresh);
+      s.off("match:rejectCancelled", refresh);
+      s.off("match:removed", refresh);
+      s.off("match:removeRequested", refresh);
+      s.off("match:removeCancelled", refresh);
+      s.off("match:removeRejected", refresh);
+      s.off("friend:removed", refresh);
+    };
+  }, [socketRef, id, fetchFriend, checkNotifications]);
 
   const truncateName = (name, length = 18) => {
     if (!name) return "";

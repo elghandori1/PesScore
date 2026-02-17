@@ -61,6 +61,14 @@ class friendModel {
     return user;
   }
 
+  static async getRequestById(requestId, senderId) {
+    const [rows] = await pool.query(
+      "SELECT id, sender_id, receiver_id FROM friend_requests WHERE id = ? AND sender_id = ? AND status = 'pending'",
+      [requestId, senderId]
+    );
+    return rows[0] || null;
+  }
+
   static async cancel_Request(senderId, requestId) {
     const [result] = await pool.query(
       "DELETE FROM friend_requests WHERE id = ? AND sender_id = ? AND status = 'pending'",
@@ -122,7 +130,15 @@ class friendModel {
     }
   }
 
-   static async reject_friend_request(userId, requestId) {
+  static async getRequestByIdAndReceiver(requestId, receiverId) {
+    const [rows] = await pool.query(
+      "SELECT id, sender_id, receiver_id FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = 'pending'",
+      [requestId, receiverId]
+    );
+    return rows[0] || null;
+  }
+
+  static async reject_friend_request(userId, requestId) {
     const [result] = await pool.query(
       "DELETE FROM friend_requests WHERE id = ? AND receiver_id = ? AND status = 'pending'",
       [requestId, userId]

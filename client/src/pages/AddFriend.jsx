@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axiosClient from "../api/axiosClient";
 import { useMessage } from "../hooks/useMessage";
+import { useSocketContext } from "../context/SocketContext";
 import useAuth from "../auth/useAuth";
 
 const AddFriend = () => {
@@ -11,7 +12,9 @@ const AddFriend = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const { user } = useAuth();
   const { showMessage, clearMessage } = useMessage();
- if (!user) return null;
+  const socketRef = useSocketContext();
+  if (!user) return null;
+
   const handleSearch = async () => {
     if (!search.trim()) {
       showMessage("الرجاء إدخال اسم أو معرف اللعبة للبحث", "error");
@@ -37,24 +40,37 @@ const AddFriend = () => {
     }
   };
 
-    const fetchPendingRequests = async () => {
-      setLoading(true);
-      try {
-        const res = await axiosClient.get("/friend/pending");
-        setPendingRequests(res.data.user || []);
-      } catch (err) {
-        showMessage(
-          err.response?.data?.message || "حدث خطأ أثناء جلب طلبات الصداقة",
-          "error"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPendingRequests = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await axiosClient.get("/friend/pending");
+      setPendingRequests(res.data.user || []);
+    } catch (err) {
+      showMessage(
+        err.response?.data?.message || "حدث خطأ أثناء جلب طلبات الصداقة",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [showMessage]);
 
   useEffect(() => {
     fetchPendingRequests();
-  }, []);
+  }, [fetchPendingRequests]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.on("friend:accepted", fetchPendingRequests);
+    s.on("friend:rejected", fetchPendingRequests);
+    s.on("friend:requestCancelled", fetchPendingRequests);
+    return () => {
+      s.off("friend:accepted", fetchPendingRequests);
+      s.off("friend:rejected", fetchPendingRequests);
+      s.off("friend:requestCancelled", fetchPendingRequests);
+    };
+  }, [socketRef, fetchPendingRequests]);
 
   const handleSendFriendRequest = async (event, receiverId) => {
     event.preventDefault();

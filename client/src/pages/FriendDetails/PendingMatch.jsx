@@ -1,18 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useMessage } from "../../hooks/useMessage";
+import { useSocketContext } from "../../context/SocketContext";
 import axiosClient from "../../api/axiosClient";
-import useAuth from "../../auth/useAuth";;
+import useAuth from "../../auth/useAuth";
 
-const PendingMatch = ({id_friend, setHasNotifications}) => {
+const PendingMatch = ({ id_friend, setHasNotifications }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { showMessage, clearMessage } = useMessage();
   const { user } = useAuth();
+  const socketRef = useSocketContext();
   const [activeTab, setActiveTab] = useState("received");
   const [sentMatch, setSentMatch] = useState([]);
   const [receivedMatch, setReceivedMatch] = useState([]);
   const [rejectedMatch, setRejectedMatch] = useState([]);
 
-  const fetchMatch = async () => {
+  const fetchMatch = useCallback(async () => {
     setIsLoading(true);
     try {
       const [receivedRes, sentRes, rejectRes] = await Promise.all([
@@ -42,11 +44,30 @@ const PendingMatch = ({id_friend, setHasNotifications}) => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [id_friend, user?.id]);
 
   useEffect(() => {
     fetchMatch();
-  }, [activeTab]); 
+  }, [activeTab, fetchMatch]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.on("match:new", fetchMatch);
+    s.on("match:accepted", fetchMatch);
+    s.on("match:rejected", fetchMatch);
+    s.on("match:cancelled", fetchMatch);
+    s.on("match:resend", fetchMatch);
+    s.on("match:rejectCancelled", fetchMatch);
+    return () => {
+      s.off("match:new", fetchMatch);
+      s.off("match:accepted", fetchMatch);
+      s.off("match:rejected", fetchMatch);
+      s.off("match:cancelled", fetchMatch);
+      s.off("match:resend", fetchMatch);
+      s.off("match:rejectCancelled", fetchMatch);
+    };
+  }, [socketRef, fetchMatch]); 
 
 
   const handleAcceptMatch = async (matchId) => {

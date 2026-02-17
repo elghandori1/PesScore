@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import axiosClient from "../../api/axiosClient";
 import { useMessage } from "../../hooks/useMessage";
+import { useSocketContext } from "../../context/SocketContext";
 import useAuth from "../../auth/useAuth";
 
 const calculateStats = (matches, userId) => {
@@ -28,12 +29,9 @@ const MatchesTab = ({ id_friend, setRemovedScore }) => {
   const [loading, setLoading] = useState(true);
   const { showMessage } = useMessage();
   const { user } = useAuth();
+  const socketRef = useSocketContext();
 
-  useEffect(() => {
-    fetchMatches();
-  }, []);
-
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     try {
       setLoading(true);
       const res = await axiosClient.get(`/match/score/${id_friend}`);
@@ -44,7 +42,28 @@ const MatchesTab = ({ id_friend, setRemovedScore }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id_friend, showMessage]);
+
+  useEffect(() => {
+    fetchMatches();
+  }, [fetchMatches]);
+
+  useEffect(() => {
+    const s = socketRef?.current;
+    if (!s) return;
+    s.on("match:accepted", fetchMatches);
+    s.on("match:removed", fetchMatches);
+    s.on("match:removeRequested", fetchMatches);
+    s.on("match:removeCancelled", fetchMatches);
+    s.on("match:removeRejected", fetchMatches);
+    return () => {
+      s.off("match:accepted", fetchMatches);
+      s.off("match:removed", fetchMatches);
+      s.off("match:removeRequested", fetchMatches);
+      s.off("match:removeCancelled", fetchMatches);
+      s.off("match:removeRejected", fetchMatches);
+    };
+  }, [socketRef, fetchMatches]);
 
   const handleRemovelMatch = async (matchId) => {
     try {
