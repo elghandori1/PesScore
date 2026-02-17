@@ -20,6 +20,8 @@ import FriendDetails from './pages/FriendDetails/FriendDetails';
 import NewScore from './pages/FriendDetails/NewScore';
 import Developer from './pages/Developer';
 import AccountId from './pages/AccountId';
+import AdminLogin from './pages/AdminLogin';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App()
 {
@@ -44,6 +46,8 @@ function App()
               <Route path="/friend-details/:id" element={<ProtectedRoute><FriendDetails/></ProtectedRoute>} />
               <Route path="/matchscore/:id" element={<ProtectedRoute><NewScore/></ProtectedRoute>} />
               <Route path="/Developer" element={<Developer/>} />
+              <Route path="/adminpes" element={<AdminLogin />} />
+              <Route path="/admin-dashboard" element={<AdminDashboard />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
