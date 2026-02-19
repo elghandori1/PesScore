@@ -3,38 +3,83 @@ import {useState, useEffect} from "react"
 import useAuth from "../auth/useAuth";
 import axiosClient from "../api/axiosClient";
 import { useMessage } from "../hooks/useMessage";
+import { useSocketContext } from "../context/SocketContext";
 
 const Home = () => {
   const { user } = useAuth();
   const { clearMessage } = useMessage();
+  const socketRef = useSocketContext();
   const [hasNotifications, setHasNotifications] = useState(false);
 
+  const checkNotifications = async () => {
+    try {
+      // Get pending friend requests
+      const friendRes = await axiosClient.get("/friend/received");
+      const pendingFriends = friendRes.data.user;
+
+      // Get pending matches
+      const matchesRes = await axiosClient.get("/match/received");
+      const pendingMatches = matchesRes.data.user;
+
+      // Set notification if there are any pending requests
+      setHasNotifications(
+        (pendingFriends && pendingFriends.length > 0) || 
+        (pendingMatches && pendingMatches.length > 0)
+      );
+    } catch (error) {
+      console.error("Error checking notifications:", error);
+    }
+  };
+
    useEffect(() => {
-    const checkNotifications = async () => {
-      try {
-        // Get pending friend requests
-        const friendRes = await axiosClient.get("/friend/received");
-        const pendingFriends = friendRes.data.user;
-
-        // Get pending matches
-        const matchesRes = await axiosClient.get("/match/received");
-        const pendingMatches = matchesRes.data.user;
-
-        // Set notification if there are any pending requests
-        setHasNotifications(
-          (pendingFriends && pendingFriends.length > 0) || 
-          (pendingMatches && pendingMatches.length > 0)
-        );
-      } catch (error) {
-        console.error("Error checking notifications:", error);
-      }
-    };
-
     // Check for notifications when component mounts
     if (user) {
       checkNotifications();
     }
   }, [user]);
+
+  // Listen for real-time socket events
+  useEffect(() => {
+    if (!socketRef?.current || !user) return;
+
+    const socket = socketRef.current;
+
+    // Friend request events
+    socket.on("friend:request", () => {
+      checkNotifications();
+    });
+
+    socket.on("friend:requestCancelled", () => {
+      checkNotifications();
+    });
+
+    // Match events
+    socket.on("match:new", () => {
+      checkNotifications();
+    });
+
+    socket.on("match:cancelled", () => {
+      checkNotifications();
+    });
+
+    socket.on("match:rejected", () => {
+      checkNotifications();
+    });
+
+    socket.on("match:accepted", () => {
+      checkNotifications();
+    });
+
+    // Cleanup listeners
+    return () => {
+      socket.off("friend:request");
+      socket.off("friend:requestCancelled");
+      socket.off("match:new");
+      socket.off("match:cancelled");
+      socket.off("match:rejected");
+      socket.off("match:accepted");
+    };
+  }, [socketRef, user]);
 
   clearMessage();
   if (!user) return null;
