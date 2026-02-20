@@ -23,10 +23,9 @@ const Profile = () => {
         const response = await axiosClient.get('/user/profile');
         setProfile(response.data.userprofile);
         
-        // Fetch friends count
         try {
-          const friendsResponse = await axiosClient.get('/friends/list');
-          setFriendCount(friendsResponse.data.friends.length);
+          const friendsResponse = await axiosClient.get('/friend/list-friend');
+          setFriendCount(friendsResponse.data.friends.length || 0);
         } catch (err) {
           console.log('Error fetching friends:', err);
           setFriendCount(0);
