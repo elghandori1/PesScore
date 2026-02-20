@@ -5,7 +5,7 @@ import useAuth from "../auth/useAuth";
 import {useMessage} from '../hooks/useMessage';
 
 const Login = () => {
-  const [idAccount, setIdAccount] = useState("");
+  const [loginInput, setLoginInput] = useState("");
   const [password, setPassword] = useState("");
   const { setUser, setJustLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -13,36 +13,49 @@ const Login = () => {
 
   const [isProcessing, setIsProcessing] = useState(false);
 
-  const handleIdChange = (e) => {
-    const value = e.target.value.toUpperCase();
-    setIdAccount(value);
+  const isGameId = (value) => {
+    // Remove hyphens for checking
+    const cleaned = value.replace(/-/g, "");
+    // Check if it's 4 letters + 9 digits
+    return /^[A-Z]{4}[0-9]{9}$/.test(cleaned);
+  };
 
-    // Match exactly: 4 letters + 9 digits (total 13 chars)
-    const pattern = /^[A-Z]{4}[0-9]{9}$/;
+  const handleLoginChange = (e) => {
+    let value = e.target.value;
 
-    if (pattern.test(value)) {
-      setIsProcessing(true);
-
-      setTimeout(() => {
-        const formatted = `${value.slice(0, 4)}-${value.slice(
-          4,
-          7
-        )}-${value.slice(7, 10)}-${value.slice(10, 13)}`;
-        setIdAccount(formatted);
-
-        setIsProcessing(false);
-      }, 300);
+    // Try to detect if it's a game ID
+    const cleaned = value.replace(/-/g, "");
+    
+    if (/^[A-Z0-9-]*$/.test(value) && cleaned.length <= 13) {
+      // Treat as potential game ID - uppercase
+      value = value.toUpperCase();
+      
+      // Auto-format if it matches game ID pattern exactly
+      if (isGameId(value)) {
+        setIsProcessing(true);
+        setTimeout(() => {
+          const formatted = `${cleaned.slice(0, 4)}-${cleaned.slice(4, 7)}-${cleaned.slice(7, 10)}-${cleaned.slice(10, 13)}`;
+          setLoginInput(formatted);
+          setIsProcessing(false);
+        }, 300);
+        return;
+      }
     }
+    setLoginInput(value);
+    console.log("Login input changed:", value);
   };
   const handleSubmit = async (e) => {
     e.preventDefault();
-   clearMessage();
+    clearMessage();
     try {
+      const cleanedInput = loginInput.replace(/-/g, "");
+      const identifier = isGameId(loginInput) ? cleanedInput : loginInput;
+      
       const response = await axiosClient.post("/auth/login", {
-        id_account: idAccount.trim(),
+        credential: identifier,
         password: password.trim(),
       });
-     localStorage.setItem('token', response.data.token);
+      localStorage.setItem('token', response.data.token);
       setUser(response.data.user);
       setJustLoggedIn(true);
       navigate("/");
@@ -66,21 +79,21 @@ const Login = () => {
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
             <label
-              htmlFor="idAccount"
+              htmlFor="loginInput"
               className="block mb-2 font-medium text-gray-700 text-xs sm:text-sm"
             >
-              معرف اللعبة ID
+              معرف اللعبة أو اسم المستخدم
             </label>
              <input
               type="text"
-              id="idAccount"
-              name="idAccount"
-              placeholder="ID أدخل معرف اللعبة الخاص بك"
-              value={idAccount}
-              onChange={handleIdChange}
+              id="loginInput"
+              name="loginInput"
+              placeholder="أدخل معرف اللعبة أو اسم المستخدم"
+              value={loginInput}
+              onChange={handleLoginChange}
               readOnly={isProcessing}
               required
-              className={`w-full p-2 sm:p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition text-sm 
+              className={`w-full p-2 sm:p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none text-sm 
                 ${isProcessing ? "bg-green-100" : "border-gray-300"}`}
             />
           </div>

@@ -15,7 +15,11 @@ class AuthModel {
     return users[0]; // return the first user or undefined
   }
 
-
+  static async findByCredential(credential) {
+    // Search by either id_account (game ID) or name_account (username - case sensitive)
+    const [users] = await pool.query('SELECT * FROM users WHERE id_account = ? OR name_account = ?', [credential, credential]);
+    return users[0]; // return the first user or undefined
+  }
 
   static async findById(id) {
     const [users] = await pool.query('SELECT * FROM users WHERE id = ?', [id]);

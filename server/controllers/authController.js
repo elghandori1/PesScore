@@ -53,13 +53,13 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
   try {
-    const { id_account, password } = req.body;
+    const { credential, password } = req.body;
 
-    if (!id_account || !password) {
+    if (!credential || !password) {
       return res.status(400).json({ message: 'يجب ملء جميع الحقول' });
     }
 
-    const user = await AuthModel.findByID_Compte(id_account);
+    const user = await AuthModel.findByCredential(credential);
     if (!user) {
       return res.status(401).json({ message: 'المستخدم غير موجود' });
     }
