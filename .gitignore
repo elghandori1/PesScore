@@ -28,4 +28,4 @@ dist-ssr
 
 database.txt
 ./server/.env
-./client/.env
+./client/.envserver/.env
